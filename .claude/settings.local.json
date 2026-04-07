@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"\"\"version\"\"\" \"D:\\\\Drive-Volume-D\\\\Development\\\\Project-Others\\\\heygen-gmail-collector\\\\manifest.json\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(dir \"D:\\\\Drive-Volume-D\\\\Development\\\\Project-22-Cracking\\\\website-request-data-0311-gmail-new\" /b)",
+      "Bash(find \"D:\\\\Drive-Volume-D\\\\Development\\\\Project-22-Cracking\\\\website-request-data -0311-gmail-1\" -type f -exec ls -lh {})",
+      "Bash(sort -k2)",
+      "Bash(python3 -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\(json.dumps\\(data, indent=2\\)\\)\")",
+      "Bash(python3:*)",
+      "Bash(grep -ao '.{0,200}heygen.{0,200}' \"D:\\\\Drive-Volume-D\\\\Development\\\\Project-22-Cracking\\\\website-request-data -0311-gmail-1\\\\mail.google.com\\\\sync\\\\u\\\\0\\\\i\\\\fd-1773234519177.json\")",
+      "Bash(dd if='/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/sync/u/0/i/fd-1773234519177.json' bs=1 skip=350 count=600)",
+      "Bash(dd if='/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/sync/u/0/i/fd-1773234519177.json' bs=1 skip=300 count=1500)",
+      "Bash(dd if='/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/sync/u/0/i/fd-1773234519177.json' bs=1 skip=1200 count=2000)",
+      "Bash(grep -o '.{0,80}app\\\\.heygen\\\\.com.{0,150}' '/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/sync/u/0/i/fd-1773234519177.json')",
+      "Bash(dd 'if=/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/sync/u/0/i/fd-1773234519177.json' bs=1 skip=3000 count=1200)",
+      "Bash(dd if='/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/sync/u/0/i/fd-1773234519177.json' bs=1 skip=20250 count=800)",
+      "Bash(dd if='/d/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-1/mail.google.com/mail/u/0-1773234521600.json' bs=1 skip=0 count=500)",
+      "Bash(ls -lh \"D:/Drive-Volume-D/Development/Project-22-Cracking/website-request-data -0311-gmail-2/mail.google.com/mail/u/0\"*inbox*)"
+    ]
+  }
+}

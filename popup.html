@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HeyGen Gmail Collector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #080c14;
+      --bg-secondary: #0d1520;
+      --bg-card: #111927;
+      --bg-hover: #162030;
+      --accent-cyan: #00d4ff;
+      --accent-cyan-dim: rgba(0, 212, 255, 0.12);
+      --accent-green: #00ff88;
+      --accent-green-dim: rgba(0, 255, 136, 0.1);
+      --accent-orange: #ff6b35;
+      --text-primary: #e8f4ff;
+      --text-secondary: #7a9ab5;
+      --text-muted: #3d5a72;
+      --border: rgba(0, 212, 255, 0.15);
+      --border-hover: rgba(0, 212, 255, 0.4);
+      --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 680px;
+      min-height: 500px;
+      max-height: 700px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Syne', sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      padding: 18px 22px 14px;
+      background: linear-gradient(180deg, rgba(0,212,255,0.05) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 22px;
+      width: 60px;
+      height: 1px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 12px var(--accent-cyan);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent-cyan), #0088cc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.3);
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+    }
+
+    .logo-text span {
+      color: var(--accent-cyan);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      border: 1px solid;
+      transition: all 0.3s;
+      cursor: default;
+    }
+
+    .status-badge.active {
+      color: var(--accent-green);
+      border-color: rgba(0, 255, 136, 0.3);
+      background: var(--accent-green-dim);
+    }
+
+    .status-badge.inactive {
+      color: var(--text-secondary);
+      border-color: var(--border);
+      background: transparent;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-badge.active .status-dot {
+      box-shadow: 0 0 6px currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      padding: 12px 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .btn {
+      padding: 7px 16px;
+      border-radius: 7px;
+      border: 1px solid;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--accent-cyan-dim);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .btn-primary:hover {
+      background: rgba(0, 212, 255, 0.2);
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-danger {
+      background: transparent;
+      border-color: rgba(255, 107, 53, 0.4);
+      color: var(--accent-orange);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 107, 53, 0.1);
+      border-color: var(--accent-orange);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .count-chip {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .count-number {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      padding: 10px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 12px 7px 32px;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* ── TABLE ── */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .table-container::-webkit-scrollbar { width: 4px; }
+    .table-container::-webkit-scrollbar-track { background: transparent; }
+    .table-container::-webkit-scrollbar-thumb {
+      background: var(--text-muted);
+      border-radius: 2px;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 180px 1fr 120px 90px;
+      padding: 8px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .email-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 120px 90px;
+      padding: 10px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      align-items: center;
+      gap: 0;
+      transition: background 0.15s;
+      animation: rowIn 0.3s ease;
+    }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .email-row:hover {
+      background: var(--bg-hover);
+    }
+
+    .email-row.new-row {
+      background: rgba(0, 212, 255, 0.05);
+      border-left: 2px solid var(--accent-cyan);
+    }
+
+    .cell-account {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 12px;
+    }
+
+    .cell-link {
+      padding-right: 12px;
+    }
+
+    .link-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--accent-cyan);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: var(--accent-cyan-dim);
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      display: block;
+    }
+
+    .link-display:hover {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.15);
+    }
+
+    .link-display.no-link {
+      color: var(--text-muted);
+      background: transparent;
+      cursor: default;
+    }
+
+    .cell-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-secondary);
+      padding-right: 12px;
+    }
+
+    .cell-actions {
+      display: flex;
+      gap: 5px;
+      justify-content: flex-end;
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-dim);
+    }
+
+    .action-btn.copied {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: var(--accent-green-dim);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 22px;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .empty-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 260px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 8px 22px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-info {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .export-btn {
+      padding: 4px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .export-btn:hover {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: var(--accent-green-dim);
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: var(--bg-card);
+      border: 1px solid var(--accent-green);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-green);
+      opacity: 0;
+      transition: all 0.25s;
+      pointer-events: none;
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── NOT GMAIL WARNING ── */
+    .not-gmail {
+      padding: 30px 22px;
+      text-align: center;
+    }
+
+    .warning-box {
+      background: rgba(255, 107, 53, 0.08);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .warning-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-orange);
+      margin-bottom: 8px;
+    }
+
+    .warning-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">📨</div>
+      <div class="logo-text">HeyGen <span>Collector</span></div>
+    </div>
+    <div class="status-badge inactive" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">STOPPED</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="mainContent">
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="btn btn-primary" id="btnStart">
+        <span>▶</span> 开始监控
+      </button>
+      <button class="btn btn-ghost" id="btnStop" disabled>
+        <span>■</span> 停止
+      </button>
+      <button class="btn btn-ghost" id="btnScan">
+        <span>⟳</span> 立即扫描
+      </button>
+      <button class="btn btn-danger" id="btnClear">
+        <span>✕</span> 清空
+      </button>
+      <div class="count-chip">
+        已收集 <span class="count-number" id="countDisplay">0</span> 条
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <div class="search-wrapper">
+        <span class="search-icon">⌕</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索账号或链接...">
+      </div>
+    </div>
+
+    <!-- TABLE HEADER -->
+    <div class="table-header">
+      <div>HeyGen 账号</div>
+      <div>验证链接</div>
+      <div>捕获时间</div>
+      <div style="text-align:right">操作</div>
+    </div>
+
+    <!-- TABLE BODY -->
+    <div class="table-container" id="tableContainer">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">暂无数据</div>
+        <div class="empty-desc">
+          请先打开 Gmail 页面<br>
+          然后点击「开始监控」<br>
+          系统将自动检测 HeyGen 验证邮件
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-info" id="footerInfo">v1.0.8 · HeyGen Gmail Collector</div>
+      <div class="footer-actions">
+        <button class="export-btn" id="btnCopyAll">复制全部</button>
+        <button class="export-btn" id="btnExportCSV">导出 CSV</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NOT GMAIL WARNING (hidden by default) -->
+  <div id="notGmailWarning" class="not-gmail" style="display:none;">
+    <div class="warning-box">
+      <div class="warning-title">⚠ 请先打开 Gmail</div>
+      <div class="warning-desc">
+        此插件需要在 Gmail 页面运行<br>
+        请访问 mail.google.com<br>
+        然后重新打开此插件
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+    "manifest_version": 3,
+    "name": "Heygen Helper T4 / Gmail Collector",
+    "version": "1.0.8",
+    "description": "自动收集 Gmail 中 HeyGen 注册验证链接，整理账号与验证码数据",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "notifications",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://mail.google.com/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://mail.google.com/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "page-interceptor.js"
+            ],
+            "matches": [
+                "https://mail.google.com/*"
+            ]
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "128": "icon.png"
+        }
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "icons": {
+        "128": "icon.png"
+    }
+}
