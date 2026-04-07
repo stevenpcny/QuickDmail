@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Heygen Helper T4 / Gmail Collector",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "description": "自动收集 Gmail 中 HeyGen 注册验证链接，整理账号与验证码数据",
     "permissions": [
         "storage",
