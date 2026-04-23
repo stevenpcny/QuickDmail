@@ -4,25 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HeyGen Gmail Collector</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #080c14;
-      --bg-secondary: #0d1520;
-      --bg-card: #111927;
-      --bg-hover: #162030;
-      --accent-cyan: #00d4ff;
-      --accent-cyan-dim: rgba(0, 212, 255, 0.12);
-      --accent-green: #00ff88;
-      --accent-green-dim: rgba(0, 255, 136, 0.1);
-      --accent-orange: #ff6b35;
-      --text-primary: #e8f4ff;
-      --text-secondary: #7a9ab5;
-      --text-muted: #3d5a72;
-      --border: rgba(0, 212, 255, 0.15);
-      --border-hover: rgba(0, 212, 255, 0.4);
-      --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.08);
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f7;
+      --bg-card: #ffffff;
+      --bg-hover: #f0f0f5;
+      --accent-cyan: #007AFF;
+      --accent-cyan-dim: rgba(0, 122, 255, 0.10);
+      --accent-green: #34c759;
+      --accent-green-dim: rgba(52, 199, 89, 0.12);
+      --accent-orange: #ff3b30;
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-muted: #aeaeb2;
+      --border: rgba(0,0,0,0.08);
+      --border-hover: rgba(0,122,255,0.35);
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,9 +30,21 @@
       width: 680px;
       min-height: 500px;
       max-height: 700px;
+    }
+
+    /* 独立标签页模式：全屏展开 */
+    @media screen and (min-width: 900px) {
+      body.tab-mode {
+        width: 100%;
+        max-height: 100vh;
+        height: 100vh;
+      }
+    }
+
+    body {
       background: var(--bg-primary);
       color: var(--text-primary);
-      font-family: 'Syne', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -41,80 +52,65 @@
 
     /* ── HEADER ── */
     .header {
-      padding: 18px 22px 14px;
-      background: linear-gradient(180deg, rgba(0,212,255,0.05) 0%, transparent 100%);
+      padding: 14px 18px 12px;
+      background: var(--bg-primary);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: relative;
-    }
-
-    .header::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 22px;
-      width: 60px;
-      height: 1px;
-      background: var(--accent-cyan);
-      box-shadow: 0 0 12px var(--accent-cyan);
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
     }
 
     .logo-icon {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent-cyan), #0088cc);
+      background: linear-gradient(135deg, #007AFF, #5856d6);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      box-shadow: 0 0 16px rgba(0, 212, 255, 0.3);
+      font-size: 15px;
+      box-shadow: var(--shadow);
     }
 
     .logo-text {
       font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
       color: var(--text-primary);
     }
 
-    .logo-text span {
-      color: var(--accent-cyan);
-    }
+    .logo-text span { color: var(--accent-cyan); }
 
     .status-badge {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 12px;
+      padding: 5px 11px;
       border-radius: 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
-      letter-spacing: 0.5px;
-      border: 1px solid;
-      transition: all 0.3s;
+      border: 1px solid var(--border);
+      transition: all 0.25s;
       cursor: default;
+      background: var(--bg-secondary);
     }
 
     .status-badge.active {
-      color: var(--accent-green);
-      border-color: rgba(0, 255, 136, 0.3);
-      background: var(--accent-green-dim);
+      color: #fff;
+      border-color: var(--accent-green);
+      background: var(--accent-green);
     }
 
     .status-badge.inactive {
       color: var(--text-secondary);
       border-color: var(--border);
-      background: transparent;
+      background: var(--bg-secondary);
     }
 
     .status-dot {
@@ -125,7 +121,7 @@
     }
 
     .status-badge.active .status-dot {
-      box-shadow: 0 0 6px currentColor;
+      background: rgba(255,255,255,0.9);
       animation: pulse 2s infinite;
     }
 
@@ -136,75 +132,83 @@
 
     /* ── CONTROLS ── */
     .controls {
-      padding: 12px 22px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 7px;
       border-bottom: 1px solid var(--border);
       background: var(--bg-secondary);
     }
 
     .btn {
-      padding: 7px 16px;
-      border-radius: 7px;
-      border: 1px solid;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      padding: 7px 13px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--bg-hover);
+      border-color: rgba(0,0,0,0.14);
     }
 
     .btn-primary {
-      background: var(--accent-cyan-dim);
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
+      background: var(--accent-cyan);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0,122,255,0.3);
     }
 
     .btn-primary:hover {
-      background: rgba(0, 212, 255, 0.2);
-      box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+      background: #0066dd;
+      box-shadow: 0 2px 8px rgba(0,122,255,0.35);
     }
 
     .btn-primary:disabled {
-      opacity: 0.4;
+      opacity: 0.45;
       cursor: not-allowed;
     }
 
     .btn-danger {
-      background: transparent;
-      border-color: rgba(255, 107, 53, 0.4);
+      background: var(--bg-primary);
+      border-color: rgba(255,59,48,0.3);
       color: var(--accent-orange);
     }
 
     .btn-danger:hover {
-      background: rgba(255, 107, 53, 0.1);
+      background: rgba(255,59,48,0.07);
       border-color: var(--accent-orange);
     }
 
     .btn-ghost {
-      background: transparent;
+      background: var(--bg-primary);
       border-color: var(--border);
       color: var(--text-secondary);
     }
 
     .btn-ghost:hover {
-      border-color: var(--border-hover);
       color: var(--text-primary);
+      border-color: rgba(0,0,0,0.16);
     }
 
     .count-chip {
       margin-left: auto;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-secondary);
       display: flex;
       align-items: center;
       gap: 4px;
+      white-space: nowrap;
     }
 
     .count-number {
@@ -214,45 +218,44 @@
 
     /* ── SEARCH BAR ── */
     .search-bar {
-      padding: 10px 22px;
+      padding: 9px 16px;
       border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
     }
 
     .search-input {
       width: 100%;
-      background: var(--bg-card);
+      background: var(--bg-secondary);
       border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 7px 12px 7px 32px;
+      border-radius: 9px;
+      padding: 7px 12px 7px 30px;
       color: var(--text-primary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 13px;
       outline: none;
-      transition: border-color 0.2s;
-      position: relative;
+      transition: all 0.15s;
     }
 
-    .search-wrapper {
-      position: relative;
-    }
+    .search-wrapper { position: relative; }
 
     .search-icon {
       position: absolute;
-      left: 10px;
+      left: 9px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
       font-size: 13px;
       pointer-events: none;
+      display: flex;
+      align-items: center;
     }
 
     .search-input:focus {
       border-color: var(--accent-cyan);
+      background: var(--bg-primary);
+      box-shadow: 0 0 0 3px rgba(0,122,255,0.12);
     }
 
-    .search-input::placeholder {
-      color: var(--text-muted);
-    }
+    .search-input::placeholder { color: var(--text-muted); }
 
     /* ── TABLE ── */
     .table-container {
@@ -261,255 +264,335 @@
       overflow-x: hidden;
     }
 
-    .table-container::-webkit-scrollbar { width: 4px; }
+    .table-container::-webkit-scrollbar { width: 5px; }
     .table-container::-webkit-scrollbar-track { background: transparent; }
-    .table-container::-webkit-scrollbar-thumb {
-      background: var(--text-muted);
-      border-radius: 2px;
-    }
+    .table-container::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
 
     .table-header {
       display: grid;
       grid-template-columns: 180px 1fr 120px 90px;
-      padding: 8px 22px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      padding: 7px 16px;
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: 1px;
       color: var(--text-muted);
       text-transform: uppercase;
+      letter-spacing: 0.5px;
       border-bottom: 1px solid var(--border);
       background: var(--bg-secondary);
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: sticky; top: 0; z-index: 10;
     }
+    .table-header .col-sort { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 3px; transition: color 0.15s; }
+    .table-header .col-sort:hover { color: var(--accent-cyan); }
+    .table-header .col-sort.active { color: var(--accent-cyan); }
+    .sort-arrow { font-size: 10px; opacity: 0.5; }
+    .col-sort.active .sort-arrow { opacity: 1; }
 
     .email-row {
       display: grid;
       grid-template-columns: 180px 1fr 120px 90px;
-      padding: 10px 22px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
       align-items: center;
-      gap: 0;
-      transition: background 0.15s;
-      animation: rowIn 0.3s ease;
+      transition: background 0.12s;
+      animation: rowIn 0.2s ease;
     }
+    @keyframes rowIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
 
-    @keyframes rowIn {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .email-row:hover {
-      background: var(--bg-hover);
-    }
+    .email-row:hover { background: var(--bg-hover); }
 
     .email-row.new-row {
-      background: rgba(0, 212, 255, 0.05);
-      border-left: 2px solid var(--accent-cyan);
+      background: linear-gradient(90deg, rgba(0,122,255,0.07) 0%, rgba(0,122,255,0.02) 100%);
+      border-left: 3px solid var(--accent-cyan);
     }
+    .email-row.new-row .cell-account { color: var(--text-primary); font-weight: 600; }
+    .email-row.new-row .cell-time { color: var(--accent-cyan); font-weight: 500; }
 
-    .cell-account {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--text-primary);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding-right: 12px;
-    }
-
-    .cell-link {
-      padding-right: 12px;
-    }
+    .cell-account { font-size: 12px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
+    .cell-link { padding-right: 12px; }
 
     .link-display {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
       color: var(--accent-cyan);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       cursor: pointer;
-      padding: 3px 6px;
-      border-radius: 4px;
+      padding: 3px 7px;
+      border-radius: 6px;
       background: var(--accent-cyan-dim);
-      border: 1px solid transparent;
-      transition: all 0.2s;
+      border: 1px solid rgba(0,122,255,0.2);
+      transition: all 0.15s;
       display: block;
     }
+    .link-display:hover { background: rgba(0,122,255,0.15); border-color: var(--accent-cyan); }
+    .link-display.no-link { color: var(--text-muted); background: transparent; border-color: transparent; cursor: default; }
 
-    .link-display:hover {
-      border-color: var(--accent-cyan);
-      background: rgba(0, 212, 255, 0.15);
-    }
-
-    .link-display.no-link {
-      color: var(--text-muted);
-      background: transparent;
-      cursor: default;
-    }
-
-    .cell-time {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      color: var(--text-secondary);
-      padding-right: 12px;
-    }
-
-    .cell-actions {
-      display: flex;
-      gap: 5px;
-      justify-content: flex-end;
-    }
+    .cell-time { font-size: 11px; color: var(--text-secondary); padding-right: 12px; }
+    .cell-actions { display: flex; gap: 4px; justify-content: flex-end; }
 
     .action-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 28px; height: 28px;
+      border-radius: 7px;
       border: 1px solid var(--border);
-      background: transparent;
+      background: var(--bg-primary);
       color: var(--text-secondary);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      transition: all 0.12s;
+      box-shadow: var(--shadow);
     }
-
-    .action-btn:hover {
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
-      background: var(--accent-cyan-dim);
-    }
-
-    .action-btn.copied {
-      border-color: var(--accent-green);
-      color: var(--accent-green);
-      background: var(--accent-green-dim);
-    }
+    .action-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--accent-cyan-dim); }
+    .action-btn.copied { border-color: var(--accent-green); color: var(--accent-green); background: var(--accent-green-dim); }
 
     /* ── EMPTY STATE ── */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 22px;
-      text-align: center;
-      gap: 12px;
-    }
-
-    .empty-icon {
-      font-size: 40px;
-      opacity: 0.3;
-    }
-
-    .empty-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-secondary);
-    }
-
-    .empty-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      max-width: 260px;
-      font-family: 'JetBrains Mono', monospace;
-    }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 22px; text-align: center; gap: 10px; }
+    .empty-icon { font-size: 38px; opacity: 0.22; color: var(--text-secondary); }
+    .empty-icon svg { display: block; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); }
+    .empty-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 260px; }
 
     /* ── FOOTER ── */
-    .footer {
-      padding: 8px 22px;
-      border-top: 1px solid var(--border);
-      background: var(--bg-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .footer-info {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .footer-actions {
-      display: flex;
-      gap: 8px;
-    }
+    .footer { padding: 8px 16px; border-top: 1px solid var(--border); background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; }
+    .footer-info { font-size: 11px; color: var(--text-muted); }
+    .footer-actions { display: flex; gap: 7px; align-items: center; }
 
     .export-btn {
-      padding: 4px 10px;
-      border-radius: 5px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-secondary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      cursor: pointer;
-      transition: all 0.15s;
+      padding: 5px 11px; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--bg-primary); color: var(--text-secondary); font-size: 12px;
+      cursor: pointer; transition: all 0.12s; box-shadow: var(--shadow);
     }
-
-    .export-btn:hover {
-      border-color: var(--accent-green);
-      color: var(--accent-green);
-      background: var(--accent-green-dim);
-    }
+    .export-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--accent-cyan-dim); }
 
     /* ── TOAST ── */
     .toast {
-      position: fixed;
-      bottom: 14px;
-      left: 50%;
+      position: fixed; bottom: 16px; left: 50%;
       transform: translateX(-50%) translateY(40px);
-      background: var(--bg-card);
-      border: 1px solid var(--accent-green);
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--accent-green);
-      opacity: 0;
-      transition: all 0.25s;
-      pointer-events: none;
-      z-index: 100;
-      white-space: nowrap;
+      background: rgba(28,28,30,0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 10px; padding: 9px 18px;
+      font-size: 13px; color: #fff; font-weight: 500;
+      opacity: 0; transition: all 0.22s; pointer-events: none; z-index: 100; white-space: nowrap;
+      box-shadow: var(--shadow-md);
     }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    /* ── TABS ── */
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-secondary); padding: 0 16px; }
+    .tab-btn {
+      padding: 10px 16px;
+      background: transparent; border: none; border-bottom: 2px solid transparent;
+      color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
     }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); font-weight: 600; }
+    .tab-btn svg { transition: color 0.15s; }
+    .tab-panel { display: none; flex-direction: column; flex: 1; min-height: 0; }
+    .tab-panel.active { display: flex; }
+
+    /* ── ACCOUNTS TAB ── */
+    .acc-table-header {
+      display: grid; grid-template-columns: 1fr 140px 60px 90px;
+      padding: 7px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border); background: var(--bg-secondary);
+    }
+    .acc-row {
+      display: grid; grid-template-columns: 1fr 140px 60px 90px;
+      padding: 8px 16px; border-bottom: 1px solid var(--border);
+      align-items: center; font-size: 12px; transition: background 0.12s;
+    }
+    .acc-row:hover { background: var(--bg-hover); }
+    .acc-email { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px; }
+    .acc-time { color: var(--text-secondary); font-size: 11px; }
+    .acc-count { color: var(--accent-cyan); font-weight: 700; }
+    .acc-actions { display: flex; gap: 4px; justify-content: flex-end; }
+
+    /* ── SETTINGS ── */
+    .settings-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .settings-title { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
+    .settings-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .settings-input {
+      flex: 1; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px;
+      padding: 7px 10px; color: var(--text-primary); font-size: 12px; outline: none; transition: all 0.15s;
+    }
+    .settings-input:focus { border-color: var(--accent-cyan); background: var(--bg-primary); box-shadow: 0 0 0 3px rgba(0,122,255,0.1); }
+    .settings-label { font-size: 12px; color: var(--text-secondary); min-width: 80px; }
+    .sync-status { display: flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 8px; font-size: 12px; background: var(--bg-secondary); border: 1px solid var(--border); }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .sync-dot.ok { background: var(--accent-green); }
+    .sync-dot.error { background: var(--accent-orange); }
+    .sync-dot.idle { background: var(--text-muted); }
+    .sync-dot.syncing { background: var(--accent-cyan); animation: pulse 1s infinite; }
+    .settings-hint { font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-top: 4px; }
+
+    /* ── MODAL ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 200; animation: fadeIn 0.15s ease; }
+    .modal-overlay.hidden { display: none; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 14px; padding: 22px; width: 440px; box-shadow: var(--shadow-md); }
+    .modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; }
+    .modal-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.6; }
+    .modal-options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+    .mode-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; background: var(--bg-secondary); }
+    .mode-card:hover, .mode-card.selected { border-color: var(--accent-cyan); background: var(--accent-cyan-dim); }
+    .mode-card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+    .mode-card-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .mode-badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 5px; margin-left: 7px; vertical-align: middle; }
+    .badge-easy { background: rgba(52,199,89,0.15); color: var(--accent-green); }
+    .badge-fast { background: rgba(0,122,255,0.12); color: var(--accent-cyan); }
+    .modal-input-wrap { margin-top: 9px; display: none; }
+    .modal-input-wrap.visible { display: block; }
+    .modal-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+    .modal-input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; color: var(--text-primary); font-size: 12px; outline: none; }
+    .modal-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(0,122,255,0.1); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar { padding: 9px 16px; border-bottom: 1px solid var(--border); background: var(--bg-secondary); display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+    .filter-group { display: flex; flex-direction: column; gap: 3px; }
+    .filter-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+    .filter-select, .filter-date { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; color: var(--text-primary); font-size: 12px; outline: none; transition: border-color 0.15s; box-shadow: var(--shadow); }
+    .filter-select:focus, .filter-date:focus { border-color: var(--accent-cyan); }
+    .filter-date { width: 130px; }
+    .filter-row { display: flex; gap: 6px; align-items: center; }
+    .filter-num { width: 52px; }
+    .filter-apply { padding: 5px 12px; }
+    .filter-reset { padding: 5px 10px; font-size: 12px; color: var(--text-muted); background: var(--bg-primary); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; box-shadow: var(--shadow); }
+    .filter-reset:hover { color: var(--accent-orange); border-color: rgba(255,59,48,0.4); }
+
+    /* ── ROTATION BAR ── */
+    .rotation-bar { display: none; align-items: center; gap: 9px; padding: 8px 16px; background: rgba(0,122,255,0.06); border-bottom: 1px solid rgba(0,122,255,0.2); font-size: 12px; }
+    .rotation-bar.visible { display: flex; }
+    .rotation-email { color: var(--accent-cyan); font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rotation-prog { color: var(--text-secondary); flex-shrink: 0; }
+    .rotation-next { padding: 4px 10px; border: 1px solid var(--accent-cyan); border-radius: 7px; background: var(--accent-cyan-dim); color: var(--accent-cyan); font-size: 12px; cursor: pointer; flex-shrink: 0; }
+    .rotation-next:hover { background: rgba(0,122,255,0.2); }
+    .rotation-stop { color: var(--accent-orange); cursor: pointer; flex-shrink: 0; padding: 4px 8px; border: 1px solid rgba(255,59,48,0.3); border-radius: 7px; font-size: 12px; }
+    .rotation-stop:hover { background: rgba(255,59,48,0.07); }
+
+    /* ── MULTI-SELECT ── */
+    .acc-table-header { grid-template-columns: 28px 1fr 130px 50px 80px; }
+    .acc-row { grid-template-columns: 28px 1fr 130px 50px 80px; }
+    .acc-cb { display: flex; align-items: center; justify-content: center; }
+    .acc-cb input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--accent-cyan); cursor: pointer; }
+    .acc-row.selected-row { background: rgba(0,122,255,0.06); border-left: 2px solid var(--accent-cyan); padding-left: 14px; }
+    .sel-toolbar { display: none; align-items: center; gap: 10px; padding: 6px 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); }
+    .sel-toolbar.visible { display: flex; }
+    .sel-count { color: var(--accent-cyan); font-weight: 600; }
+
+    /* ── SCAN PROGRESS ── */
+    .scan-progress { display: none; align-items: center; gap: 10px; padding: 8px 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); }
+    .scan-progress.visible { display: flex; }
+    .scan-spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .scan-stop { margin-left: auto; cursor: pointer; color: var(--accent-orange); padding: 3px 9px; border: 1px solid rgba(255,59,48,0.3); border-radius: 6px; font-size: 12px; }
+    .scan-stop:hover { background: rgba(255,59,48,0.07); }
 
     /* ── NOT GMAIL WARNING ── */
-    .not-gmail {
-      padding: 30px 22px;
+    .not-gmail { padding: 28px 16px; text-align: center; }
+    .warning-box { background: rgba(255,59,48,0.06); border: 1px solid rgba(255,59,48,0.2); border-radius: 12px; padding: 18px; }
+    .warning-title { font-size: 14px; font-weight: 700; color: var(--accent-orange); margin-bottom: 7px; }
+    .warning-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ── DUCK TAB ── */
+    .duck-connect-card {
+      margin: 18px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
       text-align: center;
+      background: var(--bg-secondary);
     }
-
-    .warning-box {
-      background: rgba(255, 107, 53, 0.08);
-      border: 1px solid rgba(255, 107, 53, 0.3);
-      border-radius: 10px;
-      padding: 20px;
+    .duck-connect-icon { font-size: 36px; margin-bottom: 10px; }
+    .duck-connect-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .duck-connect-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; }
+    .duck-generate-area {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-
-    .warning-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--accent-orange);
-      margin-bottom: 8px;
+    .duck-status-row {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; color: var(--text-secondary);
     }
-
-    .warning-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      font-family: 'JetBrains Mono', monospace;
+    .duck-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .duck-status-dot.ok { background: var(--accent-green); }
+    .duck-status-dot.idle { background: var(--text-muted); }
+    .duck-result-box {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      background: rgba(0,122,255,0.06);
+      border: 1px solid rgba(0,122,255,0.18);
+      border-radius: 9px;
+    }
+    .duck-result-box.visible { display: flex; }
+    .duck-result-addr {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .duck-history-section { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .duck-history-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px;
+      font-size: 11px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+    .duck-history-list { flex: 1; overflow-y: auto; }
+    .duck-history-list::-webkit-scrollbar { width: 5px; }
+    .duck-history-list::-webkit-scrollbar-track { background: transparent; }
+    .duck-history-list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+    .duck-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+    .duck-row:hover { background: var(--bg-hover); }
+    .duck-row-addr {
+      flex: 1; font-size: 12px; color: var(--text-primary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .duck-row-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+    .duck-row-new {
+      background: linear-gradient(90deg, rgba(0,122,255,0.07) 0%, rgba(0,122,255,0.02) 100%);
+      border-left: 3px solid var(--accent-cyan);
+    }
+    .duck-empty { padding: 40px 16px; text-align: center; }
+    .duck-empty-icon { color: var(--text-muted); opacity: 0.3; margin-bottom: 8px; }
+    .duck-empty-text { font-size: 13px; color: var(--text-muted); }
+    /* 链接捕获按钮 */
+    .duck-link-btn {
+      display: flex; align-items: center; gap: 3px;
+      padding: 3px 7px; border-radius: 6px; flex-shrink: 0;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-muted); font-size: 11px;
+      cursor: default; opacity: 0.35; transition: opacity 0.2s;
+    }
+    .duck-link-btn.has-link {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: var(--accent-green-dim);
+      opacity: 1; cursor: pointer;
+      animation: duckLinkPulse 1.8s ease-in-out infinite;
+    }
+    .duck-link-btn.has-link:hover { filter: brightness(1.1); }
+    .duck-link-btn.copied {
+      animation: none;
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-dim);
+    }
+    @keyframes duckLinkPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(52,199,89,0.45); }
+      50%      { box-shadow: 0 0 0 5px rgba(52,199,89,0); }
     }
   </style>
 </head>
@@ -518,57 +601,109 @@
   <!-- HEADER -->
   <div class="header">
     <div class="logo">
-      <div class="logo-icon">📨</div>
+      <div class="logo-icon">
+        <!-- envelope + spark icon -->
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <polyline points="2,5 12,13 22,5"/>
+        </svg>
+      </div>
       <div class="logo-text">HeyGen <span>Collector</span></div>
     </div>
-    <div class="status-badge inactive" id="statusBadge">
-      <div class="status-dot"></div>
-      <span id="statusText">STOPPED</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button id="btnPopout" title="弹出为浮窗（独立小窗口，可拖到 Gmail 旁边，切走不会关）" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;padding:5px 7px;line-height:1;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.color='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </button>
+      <button id="btnExpand" title="在新标签页打开完整界面" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;padding:5px 7px;line-height:1;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.color='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      </button>
+      <div class="status-badge inactive" id="statusBadge">
+        <div class="status-dot"></div>
+        <span id="statusText">已停止</span>
+      </div>
     </div>
   </div>
 
   <!-- MAIN CONTENT -->
-  <div id="mainContent">
+  <div id="mainContent" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="links">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>链接
+      </button>
+      <button class="tab-btn" data-tab="accounts">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>账号
+      </button>
+      <button class="tab-btn" data-tab="duck">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Duck
+      </button>
+      <button class="tab-btn" data-tab="settings">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>设置
+      </button>
+    </div>
+
+    <!-- TAB: LINKS -->
+    <div class="tab-panel active" id="tab-links">
 
     <!-- CONTROLS -->
     <div class="controls">
-      <button class="btn btn-primary" id="btnStart">
-        <span>▶</span> 开始监控
+      <button class="btn btn-primary" id="btnStart" title="开启后台监控：实时监听 Gmail 新到的 HeyGen 邮件并自动抓取验证链接">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+        开始监控
       </button>
-      <button class="btn btn-ghost" id="btnStop" disabled>
-        <span>■</span> 停止
+      <button class="btn btn-ghost" id="btnStop" disabled title="关闭后台监控：停止所有实时扫描（DOM + 网络拦截）">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        停止
       </button>
-      <button class="btn btn-ghost" id="btnScan">
-        <span>⟳</span> 立即扫描
+      <button class="btn btn-ghost" id="btnScan" title="扫描当前页：只扫 Gmail 当前视图里已加载的邮件行，不翻页，秒级完成">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        扫描当前页
       </button>
-      <button class="btn btn-danger" id="btnClear">
-        <span>✕</span> 清空
+      <button class="btn btn-ghost" id="btnFullScan" title="扫描全部历史：跳转到 from:heygen.com 搜索，自动翻页直到最后一页，适合首次使用或清空后重建">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        扫描全部历史
+      </button>
+      <button class="btn btn-danger" id="btnClear" title="清空所有已收集的链接和账号记录，并重置去重集合以便重新扫描">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        清空
       </button>
       <div class="count-chip">
         已收集 <span class="count-number" id="countDisplay">0</span> 条
       </div>
     </div>
 
+    <!-- SCAN PROGRESS BAR -->
+    <div class="scan-progress" id="scanProgress">
+      <div class="scan-spinner"></div>
+      <span id="scanProgressText">正在全量扫描…</span>
+      <span class="scan-stop" id="btnStopScan">停止</span>
+    </div>
+
     <!-- SEARCH -->
     <div class="search-bar">
       <div class="search-wrapper">
-        <span class="search-icon">⌕</span>
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
         <input type="text" class="search-input" id="searchInput" placeholder="搜索账号或链接...">
       </div>
     </div>
 
     <!-- TABLE HEADER -->
     <div class="table-header">
-      <div>HeyGen 账号</div>
+      <div><span class="col-sort" data-col="account">HeyGen 账号 <span class="sort-arrow">↕</span></span></div>
       <div>验证链接</div>
-      <div>捕获时间</div>
+      <div><span class="col-sort active" data-col="time">收件时间 <span class="sort-arrow">↓</span></span></div>
       <div style="text-align:right">操作</div>
     </div>
 
     <!-- TABLE BODY -->
     <div class="table-container" id="tableContainer">
       <div class="empty-state" id="emptyState">
-        <div class="empty-icon">📭</div>
+        <div class="empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polyline points="2,5 12,13 22,5"/></svg>
+        </div>
         <div class="empty-title">暂无数据</div>
         <div class="empty-desc">
           请先打开 Gmail 页面<br>
@@ -578,25 +713,351 @@
       </div>
     </div>
 
-    <!-- FOOTER -->
+    <!-- LINK ROTATION BAR (P4) -->
+    <div class="rotation-bar" id="linkRotationBar">
+      <span style="color:var(--text-secondary);flex-shrink:0">链接队列：</span>
+      <span class="rotation-email" id="linkRotationCurrent">—</span>
+      <span class="rotation-prog" id="linkRotationProg"></span>
+      <button class="rotation-next" id="btnLinkRotationNext">下一个 →</button>
+      <span class="rotation-stop" id="btnLinkRotationStop">停止</span>
+    </div>
+
+    <!-- FOOTER (links tab) -->
     <div class="footer">
-      <div class="footer-info" id="footerInfo">v1.0.8 · HeyGen Gmail Collector</div>
+      <div class="footer-info" id="footerInfo">v1.4.1 · HeyGen Gmail Collector</div>
       <div class="footer-actions">
-        <button class="export-btn" id="btnCopyAll">复制全部</button>
-        <button class="export-btn" id="btnExportCSV">导出 CSV</button>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;color:var(--text-secondary)">
+          <input type="checkbox" id="toggleLinkRotation" style="accent-color:var(--accent-cyan);cursor:pointer">
+          自动复制新链接
+        </label>
+        <button class="export-btn" id="btnCopyAll" title="把当前列表所有链接复制到剪贴板，每行一条">复制全部</button>
+        <button class="export-btn" id="btnExportCSV" title="导出链接列表为 CSV 文件（含账号、验证链接、捕获时间）">导出 CSV</button>
       </div>
     </div>
+
+    </div><!-- /#tab-links -->
+
+    <!-- TAB: ACCOUNTS -->
+    <div class="tab-panel" id="tab-accounts">
+
+      <!-- controls row -->
+      <div class="controls">
+        <div class="count-chip">
+          已收录 <span class="count-number" id="accCountDisplay">0</span> 个账号
+        </div>
+        <button class="btn btn-ghost" id="btnAccExport" style="margin-left:auto;" title="导出账号列表为 CSV（邮箱、首次收件、最后收件、次数、最新链接）">导出 CSV</button>
+        <button class="btn btn-danger" id="btnAccClear" title="清空所有账号记录，同时重置去重集合以便重新扫描统计">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          清空
+        </button>
+      </div>
+
+      <!-- search -->
+      <div class="search-bar">
+        <div class="search-wrapper">
+          <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+          <input type="text" class="search-input" id="accSearchInput" placeholder="搜索账号邮箱...">
+        </div>
+      </div>
+
+      <!-- filter bar -->
+      <div class="filter-bar" id="filterBar">
+        <div class="filter-group">
+          <div class="filter-label">筛选方式</div>
+          <select class="filter-select" id="filterMode">
+            <option value="none">全部显示</option>
+            <option value="older">最后收件早于</option>
+            <option value="range">自定义时间段</option>
+          </select>
+        </div>
+        <!-- older-than inputs -->
+        <div class="filter-group" id="filterOlderGroup" style="display:none">
+          <div class="filter-label">超过</div>
+          <div class="filter-row">
+            <input type="number" class="filter-select filter-num" id="filterOlderNum" min="1" value="30">
+            <select class="filter-select" id="filterOlderUnit">
+              <option value="day">天</option>
+              <option value="week">周</option>
+              <option value="month" selected>月</option>
+            </select>
+          </div>
+        </div>
+        <!-- range inputs -->
+        <div class="filter-group" id="filterRangeGroup" style="display:none">
+          <div class="filter-label">开始日期</div>
+          <input type="date" class="filter-date" id="filterStart">
+        </div>
+        <div class="filter-group" id="filterRangeGroup2" style="display:none">
+          <div class="filter-label">结束日期</div>
+          <input type="date" class="filter-date" id="filterEnd">
+        </div>
+        <div class="filter-group" style="justify-content:flex-end">
+          <div class="filter-label">&nbsp;</div>
+          <div class="filter-row" style="gap:6px">
+            <button class="btn btn-primary filter-apply" id="btnFilterApply" title="按当前筛选条件过滤账号列表">应用</button>
+            <button class="filter-reset" id="btnFilterReset" title="清除筛选条件，显示全部账号">重置</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- selection toolbar (shown when items checked) -->
+      <div class="sel-toolbar" id="selToolbar">
+        <span>已选 <span class="sel-count" id="selCount">0</span> 个账号</span>
+        <button class="btn btn-primary" id="btnStartRotation" style="padding:4px 12px;font-size:11px;" title="依次将选中邮箱复制到剪贴板：你每次切到别的窗口粘贴时，自动把下一个邮箱送到剪贴板">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          开始轮转复制
+        </button>
+        <span style="margin-left:auto;cursor:pointer;color:var(--text-muted)" id="btnClearSel" title="取消全部勾选">取消选择</span>
+      </div>
+
+      <!-- rotation status bar -->
+      <div class="rotation-bar" id="rotationBar">
+        <span style="color:var(--text-secondary);flex-shrink:0">剪贴板：</span>
+        <span class="rotation-email" id="rotationEmail">—</span>
+        <span class="rotation-prog" id="rotationProg"></span>
+        <button class="rotation-next" id="btnRotationNext" title="手动切到下一个邮箱（当自动检测失败时使用）">下一个 →</button>
+        <span class="rotation-stop" id="btnRotationStop" title="停止账号轮转复制">停止</span>
+      </div>
+
+      <!-- table -->
+      <div class="acc-table-header">
+        <div class="acc-cb"><input type="checkbox" id="accSelectAll" title="全选"></div>
+        <div>邮箱</div>
+        <div>最后收件</div>
+        <div>次数</div>
+        <div style="text-align:right">操作</div>
+      </div>
+      <div class="table-container" id="accTableContainer">
+        <div class="empty-state" id="accEmptyState">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="empty-title">暂无账号</div>
+          <div class="empty-desc">收到 HeyGen 邮件后<br>账号将自动去重收录</div>
+        </div>
+      </div>
+    </div><!-- /#tab-accounts -->
+
+    <!-- TAB: DUCK -->
+    <div class="tab-panel" id="tab-duck">
+
+      <!-- 操作区（始终显示） -->
+      <div class="duck-generate-area">
+
+        <!-- 说明提示 -->
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 12px;background:rgba(0,122,255,0.05);border:1px solid rgba(0,122,255,0.14);border-radius:9px;font-size:12px;color:var(--text-secondary);line-height:1.6">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>点「一键自动生成」获取新地址；用该地址注册 HeyGen 后，验证邮件到达时对应行右侧的<strong>链接按钮会变绿发光</strong>，点击即可复制验证链接。</span>
+        </div>
+
+        <!-- 按钮行 -->
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnDuckAutoGenerate" title="自动打开 DDG 页面并点击 Generate → Copy，无需手动操作">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            一键自动生成
+          </button>
+          <button class="btn btn-ghost" id="btnDuckOpenPage" title="手动打开 DDG 页面自行操作">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            打开 DDG 页面
+          </button>
+          <button class="btn btn-ghost" id="btnDuckGenerate" title="需要 token，见下方设置" style="display:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            直接生成(token)
+          </button>
+          <!-- token 状态指示 -->
+          <span id="duckTokenStatus" style="font-size:11px;color:var(--text-muted);margin-left:auto"></span>
+        </div>
+
+        <!-- 最新生成结果框 -->
+        <div class="duck-result-box" id="duckResultBox">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span class="duck-result-addr" id="duckResultAddr"></span>
+          <button class="action-btn" id="btnDuckCopyResult" title="复制地址">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+
+        <!-- Token 配置（折叠） -->
+        <div>
+          <span id="duckTokenToggle" style="font-size:11px;color:var(--text-muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px">配置 token（用于直接生成）</span>
+          <div id="duckTokenArea" style="display:none;margin-top:9px">
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:7px;line-height:1.6">
+              在 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">duckduckgo.com/email/settings/autofill</code> 按 F12 → <strong>Network</strong> → 点击「Generate」→ 找 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">quack.duckduckgo.com</code> 请求 → Headers → 复制 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">Authorization: Bearer</code> 后面的值
+            </div>
+            <div style="display:flex;gap:7px">
+              <input id="duckManualToken" class="settings-input" placeholder="粘贴 Bearer token…" style="flex:1;font-size:11px">
+              <button class="btn btn-primary" id="btnDuckManualSave" style="padding:6px 12px;font-size:12px;flex-shrink:0">保存</button>
+            </div>
+            <div id="duckTokenSaved" style="display:none;margin-top:7px;align-items:center;gap:6px">
+              <span class="duck-status-dot ok"></span>
+              <span style="font-size:11px;color:var(--text-secondary)" id="duckTokenInfo"></span>
+              <button id="btnDuckRemoveToken" style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">移除</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 历史记录（始终显示） -->
+      <div class="duck-history-section">
+        <div class="duck-history-header">
+          <span>历史地址</span>
+          <button id="btnDuckClearHistory" style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer" title="清空历史">清空</button>
+        </div>
+        <div class="duck-history-list" id="duckHistoryList"></div>
+      </div>
+
+    </div><!-- /#tab-duck -->
+
+    <!-- TAB: SETTINGS -->
+    <div class="tab-panel" id="tab-settings">
+
+      <!-- Google 集成（Sheets 同步 + Gmail API）合并面板 -->
+      <div class="settings-section" style="border:1px solid rgba(0,122,255,0.18);border-radius:10px;padding:14px 16px;background:linear-gradient(180deg,rgba(0,122,255,0.04),transparent 60%);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(0,122,255,0.10);color:var(--accent-cyan);font-size:12px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <div>
+              <div class="settings-title" style="margin:0;">Google 集成 · 需要 OAuth 授权</div>
+              <div style="font-size:10px;color:var(--text-muted);font-family:ui-monospace,'SF Mono',Menlo,monospace;margin-top:2px;">一次授权 → Sheets 备份同步 + Gmail API 全量扫描</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button class="btn btn-primary" id="btnGoogleAuth" style="font-size:11px;padding:5px 14px;" title="授权 Google 账号，启用下方 Sheets 同步与 Gmail API 功能">连接 Google 账号</button>
+            <button class="btn btn-ghost" id="btnGoogleSignout" style="font-size:11px;padding:5px 14px;display:none;" title="撤销当前 Google 账号授权">断开连接</button>
+            <span id="googleAuthStatus" style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-muted);white-space:nowrap;">未连接</span>
+          </div>
+        </div>
+
+        <!-- 子模块 1：Sheets 备份 -->
+        <div style="border-top:1px dashed rgba(0,0,0,0.10);padding-top:12px;margin-top:4px;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary);margin-bottom:8px;">▸ Google Sheets 备份同步</div>
+
+          <div class="settings-row">
+            <span class="settings-label">Spreadsheet</span>
+            <input class="settings-input" id="sheetUrlInput" placeholder="粘贴 Google Sheet URL 或留空自动创建">
+          </div>
+          <div class="settings-hint">留空时首次同步会自动创建「HeyGen Collector 备份」表格</div>
+
+          <div class="settings-row" style="margin-top:10px">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary)">
+              <input type="checkbox" id="toggleSheetsSync" style="accent-color:var(--accent-cyan);cursor:pointer">
+              启用自动同步（每 15 分钟 + 关闭 Gmail 时）
+            </label>
+          </div>
+
+          <div class="settings-row" style="gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="btnSyncNow" style="font-size:11px;padding:5px 14px;" title="立即把本地账号数据推送到 Google Sheets（如未填 URL 会自动新建一个表格）">立即同步 →</button>
+            <button class="btn btn-ghost" id="btnImportSheets" style="font-size:11px;padding:5px 14px;" title="从 Google Sheets 读取数据合并到本地（用于换设备或恢复备份）">← 从 Sheets 导入</button>
+            <div class="sync-status" id="syncStatus">
+              <div class="sync-dot idle" id="syncDot"></div>
+              <span id="syncStatusText">未同步</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 子模块 2：Gmail API 扫描（高级） -->
+        <div style="border-top:1px dashed rgba(0,0,0,0.10);padding-top:12px;margin-top:12px;">
+          <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary);margin-bottom:8px;">▸ Gmail API 扫描（高级）</div>
+
+          <div class="settings-row">
+            <span class="settings-label">Client ID</span>
+            <input class="settings-input" id="savedClientId" placeholder="OAuth Client ID（用于 Gmail API 全量扫描）">
+          </div>
+          <div class="settings-row">
+            <button class="btn btn-ghost" id="btnSaveClientId" style="font-size:11px;padding:5px 14px;" title="保存 OAuth Client ID 用于 Gmail API 模式的全量扫描">保存</button>
+          </div>
+          <div class="settings-hint">
+            在 Google Cloud Console 创建 OAuth 2.0 Client ID 后填入。<br>
+            类型选「Chrome 扩展程序」，填入此扩展 ID 即可。
+          </div>
+        </div>
+      </div>
+
+      <!-- 监控范围 -->
+      <div class="settings-section">
+        <div class="settings-title">监控范围</div>
+        <div class="settings-row">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary)">
+            <input type="radio" name="scopeMode" value="any" id="scopeAny" style="accent-color:var(--accent-cyan);cursor:pointer">
+            全部视图（收件箱 + 所有 Label，排除垃圾箱）
+          </label>
+        </div>
+        <div class="settings-row">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary)">
+            <input type="radio" name="scopeMode" value="inbox" id="scopeInbox" style="accent-color:var(--accent-cyan);cursor:pointer">
+            仅收件箱（Inbox）
+          </label>
+        </div>
+        <div class="settings-row">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary)">
+            <input type="radio" name="scopeMode" value="custom" id="scopeCustom" style="accent-color:var(--accent-cyan);cursor:pointer">
+            指定 Label（可多个，逗号分隔）
+          </label>
+        </div>
+        <div class="settings-row">
+          <input class="settings-input" id="scopeLabels" placeholder="例如：HeyGen, Registrations" style="margin-left:18px">
+        </div>
+        <div class="settings-hint">选"仅收件箱"时只在 Gmail 收件箱视图扫；选"指定 Label"时只在匹配的 Label 视图扫。</div>
+      </div>
+
+      <!-- 非验证链接邮件自动丢到 Trash -->
+      <div class="settings-section">
+        <div class="settings-title">非验证链接邮件处理</div>
+        <div class="settings-row">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--text-secondary)">
+            <input type="checkbox" id="toggleAutoTrash" style="accent-color:var(--accent-cyan);cursor:pointer">
+            扫描到来自 HeyGen 但不含 magic-web 验证链接的邮件时，自动移至垃圾箱
+          </label>
+        </div>
+        <div class="settings-hint">仅在 Gmail 页面已打开时生效，通过模拟点击 Gmail 的「删除」按钮实现。</div>
+      </div>
+
+    </div><!-- /#tab-settings -->
 
   </div>
 
   <!-- NOT GMAIL WARNING (hidden by default) -->
   <div id="notGmailWarning" class="not-gmail" style="display:none;">
     <div class="warning-box">
-      <div class="warning-title">⚠ 请先打开 Gmail</div>
+      <div class="warning-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        请先打开 Gmail
+      </div>
       <div class="warning-desc">
         此插件需要在 Gmail 页面运行<br>
         请访问 mail.google.com<br>
         然后重新打开此插件
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL SCAN MODAL -->
+  <div class="modal-overlay hidden" id="scanModal">
+    <div class="modal">
+      <div class="modal-title">全量扫描历史 HeyGen 邮件</div>
+      <div class="modal-sub">扫描收件箱中所有 HeyGen 邮件，重新建立账号列表。<br>请选择扫描方式：</div>
+      <div class="modal-options">
+        <div class="mode-card selected" id="modeSimple" data-mode="simple">
+          <div class="mode-card-title">简单模式 <span class="mode-badge badge-easy">零配置</span></div>
+          <div class="mode-card-desc">自动在 Gmail 中搜索并翻页，逐封提取链接。<br>无需任何授权，速度较慢（约 1-2 秒/封）。</div>
+        </div>
+        <div class="mode-card" id="modeApi" data-mode="api">
+          <div class="mode-card-title">Gmail API 模式 <span class="mode-badge badge-fast">批量·快速</span></div>
+          <div class="mode-card-desc">通过 Google 官方 API 批量读取，百封邮件几秒完成。<br>需要 Google Cloud Console 配置 OAuth Client ID。</div>
+          <div class="modal-input-wrap" id="clientIdWrap">
+            <div class="modal-label">OAuth Client ID（格式：xxxxx.apps.googleusercontent.com）</div>
+            <input class="modal-input" id="oauthClientId" placeholder="粘贴你的 Client ID">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btnScanCancel">取消</button>
+        <button class="btn btn-primary" id="btnScanStart">开始扫描</button>
       </div>
     </div>
   </div>

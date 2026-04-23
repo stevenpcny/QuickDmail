@@ -1,18 +1,31 @@
 {
     "manifest_version": 3,
     "name": "Heygen Helper T4 / Gmail Collector",
-    "version": "1.0.9",
+    "version": "1.4.1",
     "description": "自动收集 Gmail 中 HeyGen 注册验证链接，整理账号与验证码数据",
     "permissions": [
         "storage",
         "activeTab",
         "scripting",
         "notifications",
-        "tabs"
+        "tabs",
+        "identity",
+        "alarms"
     ],
     "host_permissions": [
-        "https://mail.google.com/*"
+        "https://mail.google.com/*",
+        "https://sheets.googleapis.com/*",
+        "https://www.googleapis.com/*",
+        "https://quack.duckduckgo.com/*",
+        "https://duckduckgo.com/email/*"
     ],
+    "oauth2": {
+        "client_id": "__OAUTH_CLIENT_ID__",
+        "scopes": [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive.file"
+        ]
+    },
     "content_scripts": [
         {
             "matches": [
@@ -22,12 +35,34 @@
                 "content.js"
             ],
             "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "https://duckduckgo.com/email/*"
+            ],
+            "js": [
+                "ddg-page-interceptor.js"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
+        },
+        {
+            "matches": [
+                "https://duckduckgo.com/email/*"
+            ],
+            "js": [
+                "ddg-content.js"
+            ],
+            "run_at": "document_start"
         }
     ],
     "web_accessible_resources": [
         {
             "resources": [
-                "page-interceptor.js"
+                "page-interceptor.js",
+                "popup.html",
+                "popup.js",
+                "icon.png"
             ],
             "matches": [
                 "https://mail.google.com/*"
