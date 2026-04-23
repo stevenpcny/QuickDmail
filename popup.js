@@ -1122,34 +1122,48 @@ function exportDuckCSV() {
   });
 }
 
-// ── 根据时间区间为 Duck 地址匹配验证链接 ──────────────────────
-// 逻辑：Duck 地址生成之后、下一个 Duck 地址生成之前到达的链接属于该地址
+// ── 为 Duck 地址匹配验证链接 ──────────────────────────────────
+// 优先：精确账号匹配（link.account === duck 地址，来自 magic-link base64 解码）
+// 兜底：时间区间匹配（账号解码失败或为空时）
 function _findLinkForDuck(duckItem, allDuckAddresses, allLinks) {
-  if (!allLinks || allLinks.length === 0 || !duckItem.createdAt) return null;
+  if (!allLinks || allLinks.length === 0) return null;
 
+  const addr = (duckItem.address || '').toLowerCase();
+
+  // ── 精确匹配：link.account 就是注册 HeyGen 用的邮箱 ──────────
+  const exact = allLinks.filter(link =>
+    link.verifyLink && (link.account || '').toLowerCase() === addr
+  );
+  if (exact.length > 0) {
+    // 多条时取最新的
+    exact.sort((a, b) =>
+      new Date(b.capturedAt || b.receivedAt || 0) - new Date(a.capturedAt || a.receivedAt || 0)
+    );
+    return exact[0];
+  }
+
+  // ── 兜底：时间区间（account 为空或非 duck 地址时）────────────
+  if (!duckItem.createdAt) return null;
   const t0 = new Date(duckItem.createdAt).getTime();
 
-  // 找比该地址更新的那个 Duck 地址（作为时间窗口上界）
-  const sorted = [...allDuckAddresses]
+  const sortedDuck = [...allDuckAddresses]
     .filter(d => d.createdAt)
-    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // 升序
-  const idx = sorted.findIndex(d => d.address === duckItem.address);
-  const nextDuck = sorted[idx + 1];
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const idx = sortedDuck.findIndex(d => d.address === duckItem.address);
+  const nextDuck = sortedDuck[idx + 1];
   const t1 = nextDuck ? new Date(nextDuck.createdAt).getTime() : Date.now() + 1;
 
-  // 收集窗口内捕获的所有验证链接
-  const candidates = allLinks.filter(link => {
-    if (!link.verifyLink) return false;
+  const window_ = allLinks.filter(link => {
+    if (!link.verifyLink || link.account) return false; // account 有值时跳过（已被精确匹配覆盖）
     const lt = new Date(link.capturedAt || link.receivedAt || 0).getTime();
     return lt >= t0 && lt <= t1;
   });
-  if (candidates.length === 0) return null;
+  if (window_.length === 0) return null;
 
-  // 返回最新的那条
-  candidates.sort((a, b) =>
+  window_.sort((a, b) =>
     new Date(b.capturedAt || b.receivedAt || 0) - new Date(a.capturedAt || a.receivedAt || 0)
   );
-  return candidates[0];
+  return window_[0];
 }
 
 // ── 渲染 Duck Tab ─────────────────────────────────────────────
@@ -1217,7 +1231,12 @@ function _renderDuckHistory(history, allLinks) {
 
   const links = allLinks || [];
 
-  history.forEach((item, idx) => {
+  // 按生成时间降序（最新在最上）
+  const sorted = [...history].sort((a, b) =>
+    new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+  );
+
+  sorted.forEach((item, idx) => {
     // 查找匹配的验证链接
     const matchedLink = _findLinkForDuck(item, history, links);
     const hasLink = !!(matchedLink && matchedLink.verifyLink);
