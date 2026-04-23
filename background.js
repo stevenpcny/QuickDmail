@@ -45,6 +45,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'SHEETS_SYNC_NOW') {
     syncPendingToSheets().then(() => sendResponse({ success: true })).catch(e => sendResponse({ success: false, error: e.message }));
     return true;
+  } else if (message.type === 'SHEETS_SYNC_DUCK_NOW') {
+    syncDuckToSheets().then(() => sendResponse({ success: true })).catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
   } else if (message.type === 'SHEETS_IMPORT') {
     importFromSheets().then(data => sendResponse({ success: true, data })).catch(e => sendResponse({ success: false, error: e.message }));
     return true;
@@ -177,6 +180,61 @@ function getAuthToken(interactive) {
       if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
       else resolve(token);
     });
+  });
+}
+
+// ─── Duck 地址同步到 Sheets ────────────────────────────────────
+async function syncDuckToSheets() {
+  const { sheetsSyncConfig, ddgAddresses } = await storageGet(['sheetsSyncConfig', 'ddgAddresses']);
+  if (!sheetsSyncConfig || !sheetsSyncConfig.spreadsheetId) {
+    throw new Error('请先在设置页配置 Google Sheets');
+  }
+
+  const token = await getAuthToken(true);
+  const sheetId  = sheetsSyncConfig.spreadsheetId;
+  const tabName  = 'Duck 地址';
+
+  // 确保 "Duck 地址" tab 存在
+  await ensureSheetTab(token, sheetId, tabName);
+
+  const srcLabel = { generated: 'API生成', 'ddg-page': 'DDG页面', scanned: 'Gmail扫描' };
+  const list = ddgAddresses || [];
+
+  const values = [
+    ['Duck地址', '来源', '生成时间'],
+    ...list.map(d => [
+      d.address  || '',
+      srcLabel[d.source] || d.source || '',
+      d.createdAt || ''
+    ])
+  ];
+
+  await sheetsRequest(token, 'PUT',
+    `/values/${encodeURIComponent(tabName + '!A1')}?valueInputOption=RAW`,
+    sheetId, { values }
+  );
+
+  chrome.runtime.sendMessage({ type: 'SYNC_STATUS', status: 'ok', ts: Date.now() }).catch(() => {});
+}
+
+// 也在常规 syncPendingToSheets 后自动写入 Duck 地址（同步一并完成）
+const _origSyncPending = syncPendingToSheets;
+// (在 syncPendingToSheets 成功后追加调用 — 不改原函数以保持独立性)
+
+// ─── 确保 Sheet tab 存在（不存在则创建）─────────────────────────
+async function ensureSheetTab(token, spreadsheetId, tabName) {
+  const meta = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`,
+    { headers: { 'Authorization': 'Bearer ' + token } }
+  ).then(r => r.json());
+
+  const exists = (meta.sheets || []).some(s => s.properties.title === tabName);
+  if (exists) return;
+
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title: tabName } } }] })
   });
 }
 

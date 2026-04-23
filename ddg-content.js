@@ -33,7 +33,7 @@
     chrome.storage.local.get(['ddgAddresses'], (r) => {
       const list = r.ddgAddresses || [];
       if (list.some(a => a.address === address)) return; // 去重
-      list.unshift({ address, createdAt: new Date().toISOString() });
+      list.unshift({ address, createdAt: new Date().toISOString(), source: 'ddg-page' });
       chrome.storage.local.set({ ddgAddresses: list.slice(0, 100) });
       // 通知 popup 更新列表
       chrome.runtime.sendMessage({ type: 'DDG_ADDRESS_CAPTURED', address }).catch(() => {});

@@ -1074,6 +1074,54 @@ let _ddgLatestAddr = '';     // 本次最新生成的地址
 const DUCK_SVG_COPY  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 const DUCK_SVG_CHECK = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
+// ── 从 heygenData 扫描 @duck.com 账号，合并到 ddgAddresses ──────
+// 调用后 fire-and-forget：如有新地址才写 storage，触发 onChanged 二次渲染
+function _mergeDuckFromHeygenData(heygenData, existingAddresses) {
+  const existingSet = new Set((existingAddresses || []).map(d => (d.address || '').toLowerCase()));
+  const toAdd = [];
+
+  (heygenData || []).forEach(item => {
+    const acc = (item.account || '');
+    if (!acc.toLowerCase().includes('@duck.com')) return;
+    if (existingSet.has(acc.toLowerCase())) return;
+    existingSet.add(acc.toLowerCase());
+    toAdd.push({
+      address: acc,
+      createdAt: item.receivedAt || item.capturedAt || new Date().toISOString(),
+      source: 'scanned'
+    });
+  });
+
+  if (toAdd.length === 0) return;
+
+  const merged = [...toAdd, ...(existingAddresses || [])]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 500);
+
+  chrome.storage.local.set({ ddgAddresses: merged });
+}
+
+// ── 导出 Duck 地址 CSV ────────────────────────────────────────
+function exportDuckCSV() {
+  chrome.storage.local.get(['ddgAddresses'], r => {
+    const list = r.ddgAddresses || [];
+    if (list.length === 0) { showToast('没有 Duck 地址可导出'); return; }
+    const srcLabel = { generated: 'API生成', 'ddg-page': 'DDG页面', scanned: 'Gmail扫描' };
+    const header = 'Duck地址,来源,时间\n';
+    const rows = list.map(d =>
+      `"${d.address || ''}","${srcLabel[d.source] || d.source || ''}","${d.createdAt || ''}"`
+    ).join('\n');
+    const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `duck_addresses_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`✓ 已导出 ${list.length} 条 Duck 地址`);
+  });
+}
+
 // ── 根据时间区间为 Duck 地址匹配验证链接 ──────────────────────
 // 逻辑：Duck 地址生成之后、下一个 Duck 地址生成之前到达的链接属于该地址
 function _findLinkForDuck(duckItem, allDuckAddresses, allLinks) {
@@ -1111,8 +1159,10 @@ async function renderDuckTab() {
   );
 
   _ddgToken = stored.ddgToken || '';
-  const history = stored.ddgAddresses || [];
   const allLinks = stored.heygenData || [];
+  // 扫描 heygenData，把 @duck.com 账号合并进来（fire-and-forget）
+  _mergeDuckFromHeygenData(allLinks, stored.ddgAddresses || []);
+  const history = stored.ddgAddresses || [];
 
   // 更新 token 状态指示器
   const statusEl = document.getElementById('duckTokenStatus');
@@ -1140,6 +1190,10 @@ async function renderDuckTab() {
       savedEl.style.display = 'none';
     }
   }
+
+  // 更新历史计数标题
+  const countEl = document.getElementById('duckHistoryCount');
+  if (countEl) countEl.textContent = `历史地址（${history.length} 条）`;
 
   // 渲染历史（传入验证链接列表，用于匹配）
   _renderDuckHistory(history, allLinks);
@@ -1177,11 +1231,21 @@ function _renderDuckHistory(history, allLinks) {
       ? d.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
       : '';
 
+    // 来源角标
+    const srcMap = { generated: { label: '生成', color: 'var(--accent-cyan)' },
+                     'ddg-page': { label: 'DDG',  color: 'var(--text-muted)' },
+                      scanned:   { label: '扫描', color: 'var(--accent-green)' } };
+    const srcInfo = srcMap[item.source || ''] || { label: '', color: 'var(--text-muted)' };
+    const srcBadge = srcInfo.label
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid ${srcInfo.color};color:${srcInfo.color};opacity:0.8;flex-shrink:0">${srcInfo.label}</span>`
+      : '';
+
     // 链接按钮 SVG
     const SVG_LINK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
 
     row.innerHTML = `
       <span class="duck-row-addr" title="${item.address}">${item.address}</span>
+      ${srcBadge}
       <span class="duck-row-time">${timeStr}</span>
       <button class="duck-link-btn ${hasLink ? 'has-link' : ''}"
               title="${hasLink ? '点击复制验证链接：' + matchedLink.verifyLink.substring(0, 60) + '…' : '等待验证邮件到达…'}"
@@ -1276,8 +1340,8 @@ async function duckGenerateAddress() {
     const stored = await new Promise(r => chrome.storage.local.get(['ddgAddresses'], r));
     const history = stored.ddgAddresses || [];
     if (!history.some(a => a.address === address)) {
-      history.unshift({ address, createdAt: new Date().toISOString() });
-      chrome.storage.local.set({ ddgAddresses: history.slice(0, 100) });
+      history.unshift({ address, createdAt: new Date().toISOString(), source: 'generated' });
+      chrome.storage.local.set({ ddgAddresses: history.slice(0, 200) });
     }
 
     // 显示结果
@@ -1511,6 +1575,22 @@ function initDuckTab() {
       _ddgToken = '';
       renderDuckTab();
       showToast('Token 已移除');
+    };
+  }
+
+  // 导出 CSV
+  const btnExportDuck = document.getElementById('btnDuckExportCSV');
+  if (btnExportDuck) btnExportDuck.onclick = exportDuckCSV;
+
+  // 同步到 Google Sheets
+  const btnSyncDuck = document.getElementById('btnDuckSyncSheets');
+  if (btnSyncDuck) {
+    btnSyncDuck.onclick = () => {
+      chrome.runtime.sendMessage({ type: 'SHEETS_SYNC_DUCK_NOW' }, (res) => {
+        void chrome.runtime.lastError;
+        if (res && res.success) showToast('✓ Duck 地址已同步到 Sheets');
+        else showToast('同步失败（请先在设置页配置 Google Sheets）');
+      });
     };
   }
 
