@@ -1277,22 +1277,43 @@ function _renderDuckHistory(history, allLinks) {
     listEl.appendChild(row);
   });
 
-  // 绑定「复制验证链接」按钮
+  // 绑定「复制 / 拖拽验证链接」按钮
+  const SVG_LINK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+  const SVG_CHECK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
   listEl.querySelectorAll('.duck-link-btn.has-link').forEach(btn => {
+    // 点击复制
     btn.onclick = async (e) => {
       const link = e.currentTarget.dataset.link;
       if (!link) return;
       await copyText(link);
-      e.currentTarget.classList.remove('has-link');
-      e.currentTarget.classList.add('copied');
-      e.currentTarget.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 已复制`;
+      _duckMarkLinkUsed(e.currentTarget);
       showToast('✓ 验证链接已复制');
-      // 1.5 秒后恢复，但保持 copied 状态（链接已用，不再发光）
-      setTimeout(() => {
-        e.currentTarget.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> 链接`;
-      }, 1500);
     };
+
+    // 拖拽：把链接设为 drag data，可拖到浏览器地址栏或其他标签页
+    btn.setAttribute('draggable', 'true');
+    btn.addEventListener('dragstart', e => {
+      const link = btn.dataset.link;
+      if (!link) return;
+      e.dataTransfer.setData('text/uri-list', link);
+      e.dataTransfer.setData('text/plain', link);
+      e.dataTransfer.effectAllowed = 'copyLink';
+    });
+    btn.addEventListener('dragend', e => {
+      if (e.dataTransfer.dropEffect !== 'none') {
+        _duckMarkLinkUsed(btn);
+        showToast('✓ 验证链接已拖出');
+      }
+    });
   });
+
+  function _duckMarkLinkUsed(btn) {
+    btn.classList.remove('has-link');
+    btn.classList.add('copied');
+    btn.innerHTML = SVG_CHECK_ICON + ' 已复制';
+    setTimeout(() => { btn.innerHTML = SVG_LINK_ICON + ' 链接'; }, 1500);
+  }
 
   // 绑定「复制 Duck 地址」按钮
   listEl.querySelectorAll('.duck-copy-btn').forEach(btn => {

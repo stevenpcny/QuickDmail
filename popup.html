@@ -580,10 +580,11 @@
       border-color: var(--accent-green);
       color: var(--accent-green);
       background: var(--accent-green-dim);
-      opacity: 1; cursor: pointer;
+      opacity: 1; cursor: grab;
       animation: duckLinkPulse 1.8s ease-in-out infinite;
     }
     .duck-link-btn.has-link:hover { filter: brightness(1.1); }
+    .duck-link-btn.has-link:active { cursor: grabbing; }
     .duck-link-btn.copied {
       animation: none;
       border-color: var(--accent-cyan);
