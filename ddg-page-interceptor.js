@@ -1,4 +1,4 @@
-// HeyGen Gmail Collector — DuckDuckGo Page Context Interceptor
+// Duck邮箱接码 — DuckDuckGo Page Context Interceptor
 // 运行在 duckduckgo.com/email/* 页面的 MAIN world（manifest world:MAIN 注入）
 // 策略：token 存在 DDG 扩展隔离存储中无法直接读取，改用三种捕获手段：
 //   1. 拦截剪贴板写入（用户点 Copy 时捕获地址）
@@ -100,5 +100,5 @@
   }
   setInterval(pollDom, 800);
 
-  console.log('[HeyGen Collector] DDG page interceptor ready (clipboard + postMessage + DOM poll)');
+  console.log('[Duck邮箱接码] DDG page interceptor ready (clipboard + postMessage + DOM poll)');
 })();

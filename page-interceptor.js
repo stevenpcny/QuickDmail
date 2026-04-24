@@ -1,14 +1,28 @@
-// HeyGen Gmail Collector — Page Context Interceptor
+// Duck邮箱接码 — Page Context Interceptor
 // 注入到 Gmail 页面主上下文（Main World），拦截 XHR/fetch 响应，
-// 从 Gmail 的 JSON API 响应中直接提取 HeyGen 验证链接
+// 从 Gmail 的 JSON API 响应中直接提取激活链接
 // 通过 window.postMessage 与 content.js 通信
 (function () {
   'use strict';
 
-  // ── 正则：匹配 HeyGen magic link URL（含 Unicode 转义变体）─────
-  // ⚠️ HeyGen 已将域名从 app.heygen.com 迁移至 auth.heygen.com，两者都要匹配
-  // 使用否定字符类 [^\s"'<>\\] 避免遗漏 %、+ 等 URL 字符
-  const MAGIC_RE = /https:\/\/auth\.heygen\.com\/magic-web\/[^\s"'<>\\]+/g;
+  // ── 动态链接关键词（由 content.js 通过 window 变量或 postMessage 注入）──
+  const DEFAULT_LINK_KEYWORD = 'auth.heygen.com/magic-web/';
+  let _linkKeyword = (typeof window.__HGC_LINK_KEYWORD__ === 'string' && window.__HGC_LINK_KEYWORD__)
+    ? window.__HGC_LINK_KEYWORD__
+    : DEFAULT_LINK_KEYWORD;
+
+  function _buildMagicRe() {
+    const esc = _linkKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\//g, '\\/');
+    return new RegExp(`https:\\/\\/${esc}[^\\s"'<>\\\\]+`, 'g');
+  }
+
+  // 监听 content.js 下发的配置更新
+  window.addEventListener('message', (e) => {
+    if (e.source !== window) return;
+    if (e.data && e.data.type === 'HGC_CONFIG_UPDATE' && e.data.linkKeyword) {
+      _linkKeyword = e.data.linkKeyword;
+    }
+  });
 
   // ── 反转义 Gmail JSON 中的 Unicode 转义序列 ──────────────────
   function unescapeJson(text) {
@@ -57,10 +71,13 @@
 
   // ── 扫描响应文本并通过 postMessage 上报捕获到的链接 ───────────
   function scanAndPost(rawText, source) {
-    if (!rawText || !rawText.includes('heygen')) return;
+    if (!rawText) return;
+    // 快速过滤：必须包含链接关键词的某个特征词（性能优化）
+    if (!rawText.includes('heygen') && !rawText.includes(_linkKeyword.split('.')[0])) return;
 
     // 先反转义，让 URL 还原为正常形式再匹配
     const text = unescapeJson(rawText);
+    const MAGIC_RE = _buildMagicRe();
     const matches = text.match(MAGIC_RE);
     if (!matches || matches.length === 0) return;
 
@@ -128,5 +145,5 @@
     return promise;
   };
 
-  console.log('[HeyGen Collector] page interceptor ready — XHR & fetch hooked');
+  console.log('[Duck邮箱接码] page interceptor ready — XHR & fetch hooked');
 })();

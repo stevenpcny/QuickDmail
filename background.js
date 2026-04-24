@@ -1,7 +1,7 @@
-// HeyGen Gmail Collector - Background Service Worker
+// Duck邮箱接码 - Background Service Worker
 
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('[HeyGen Collector] 插件已安装/更新:', details.reason);
+  console.log('[Duck邮箱接码] 插件已安装/更新:', details.reason);
   // 仅在首次安装时初始化数据，避免扩展更新时清空用户历史
   if (details.reason === 'install') {
     chrome.storage.local.set({ autoStart: true, heygenData: [] });
@@ -60,9 +60,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // ─── Badge ───────────────────────────────────────────────────
 function updateBadge() {
-  chrome.storage.local.get(['heygenAccounts'], (r) => {
+  chrome.storage.local.get(['heygenAccounts', 'customLinkKeyword'], (r) => {
+    const keyword = r.customLinkKeyword || 'auth.heygen.com/magic-web/';
     const valid = (r.heygenAccounts || []).filter(a =>
-      (a.latestLink || '').includes('auth.heygen.com/magic-web/')
+      (a.latestLink || '').includes(keyword)
     );
     const count = valid.length;
     const label = count === 0 ? '' : (count > 99 ? '99+' : String(count));
@@ -101,7 +102,7 @@ async function syncPendingToSheets() {
     if (!token) return;
 
     const sheetId = sheetsSyncConfig.spreadsheetId;
-    const sheetName = sheetsSyncConfig.sheetName || 'HeyGen Accounts';
+    const sheetName = sheetsSyncConfig.sheetName || 'Duck邮箱接码';
 
     // batch upsert: write all heygenAccounts to sheet (simpler than row-level diff)
     const accounts = heygenAccounts || [];
@@ -129,7 +130,7 @@ async function syncPendingToSheets() {
     chrome.storage.local.set({ pendingSync: [], lastSyncAt: Date.now() });
     chrome.runtime.sendMessage({ type: 'SYNC_STATUS', status: 'ok', ts: Date.now() }).catch(() => {});
   } catch (e) {
-    console.warn('[HeyGen] Sheets sync failed', e);
+    console.warn('[Duck邮箱接码] Sheets sync failed', e);
     chrome.runtime.sendMessage({ type: 'SYNC_STATUS', status: 'error', msg: e.message }).catch(() => {});
   }
 }
@@ -139,7 +140,7 @@ async function importFromSheets() {
   if (!sheetsSyncConfig || !sheetsSyncConfig.spreadsheetId) throw new Error('未配置 Spreadsheet');
 
   const token = await getAuthToken(true);
-  const sheetName = sheetsSyncConfig.sheetName || 'HeyGen Accounts';
+  const sheetName = sheetsSyncConfig.sheetName || 'Duck邮箱接码';
   const res = await sheetsRequest(token, 'GET',
     `/values/${encodeURIComponent(sheetName + '!A2:E')}`, sheetsSyncConfig.spreadsheetId
   );
@@ -160,7 +161,7 @@ async function ensureSheet(token, sheetName) {
   const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ properties: { title: 'HeyGen Collector 备份' }, sheets: [{ properties: { title: sheetName } }] })
+    body: JSON.stringify({ properties: { title: 'Duck邮箱接码备份' }, sheets: [{ properties: { title: sheetName } }] })
   });
   if (!res.ok) throw new Error('创建 Sheet 失败: ' + res.status);
   return (await res.json()).spreadsheetId;

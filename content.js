@@ -1,4 +1,4 @@
-// HeyGen Gmail Collector - Content Script
+// Duck邮箱接码 - Content Script
 // 监听 Gmail 页面，自动检测并收集 HeyGen 验证邮件
 
 (function () {
@@ -13,6 +13,35 @@
     let _emailQueue = [];
     let _isProcessing = false;
 
+    // ─── 自定义配置（从 storage 加载，异步更新）──────────────────
+    const DEFAULT_LINK_KEYWORD = 'auth.heygen.com/magic-web/';
+    let _linkKeyword = DEFAULT_LINK_KEYWORD;
+    let _trashKeywords = [];
+
+    function _loadCustomConfig(callback) {
+        chrome.storage.local.get(['customLinkKeyword', 'trashKeywords'], (r) => {
+            _linkKeyword = r.customLinkKeyword || DEFAULT_LINK_KEYWORD;
+            _trashKeywords = r.trashKeywords || [];
+            // 通知 page-interceptor 更新关键词
+            window.__HGC_LINK_KEYWORD__ = _linkKeyword;
+            window.postMessage({ type: 'HGC_CONFIG_UPDATE', linkKeyword: _linkKeyword }, '*');
+            if (callback) callback();
+        });
+    }
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') return;
+        if (changes.customLinkKeyword) {
+            _linkKeyword = changes.customLinkKeyword.newValue || DEFAULT_LINK_KEYWORD;
+            window.__HGC_LINK_KEYWORD__ = _linkKeyword;
+            window.postMessage({ type: 'HGC_CONFIG_UPDATE', linkKeyword: _linkKeyword }, '*');
+        }
+        if (changes.trashKeywords) _trashKeywords = changes.trashKeywords.newValue || [];
+    });
+
+    // 立即设置默认值，再异步加载存储值
+    window.__HGC_LINK_KEYWORD__ = DEFAULT_LINK_KEYWORD;
+    _loadCustomConfig();
+
     // ─── ① 尽早注入页面拦截器（在 Gmail JS 执行前） ─────────────
     // page-interceptor.js 运行在 Gmail 主上下文，可拦截 XHR/fetch 响应，
     // 直接从 Gmail JSON API 中提取 HeyGen 验证链接，无需点击打开邮件。
@@ -23,7 +52,7 @@
             (document.head || document.documentElement).appendChild(s);
             s.onload = () => s.remove();
         } catch (e) {
-            console.warn('[HeyGen Collector] 拦截器注入失败', e);
+            console.warn('[Duck邮箱接码] 拦截器注入失败', e);
         }
     })();
 
@@ -34,7 +63,7 @@
         if (!isMonitoring) return;
         if (!_isScopeAllowed()) return;
         const { link, account, receivedTs, gmailThreadId } = event.data;
-        if (!link || !link.includes('auth.heygen.com/magic-web/')) return;
+        if (!link || !link.includes(_linkKeyword)) return;
         _saveXhrCapturedLink(link, account || '', receivedTs || 0, gmailThreadId || '');
     });
 
@@ -42,8 +71,8 @@
     // heygenAccounts: [{ email, lastSeen, firstSeen, count, latestLink }]
     function _upsertAccount(email, link, receivedTs) {
         if (!email || !email.includes('@')) return;
-        // 仅当包含 magic-web 验证链接时才计入账号表 / 计数
-        if (!link || !link.includes('auth.heygen.com/magic-web/')) return;
+        // 仅当包含激活链接关键词时才计入账号表 / 计数
+        if (!link || !link.includes(_linkKeyword)) return;
         const normalized = email.trim().toLowerCase();
         // 优先用邮件真实收件时间，缺省才退回当前时间
         const ts = (receivedTs && receivedTs > 0) ? receivedTs : Date.now();
@@ -101,7 +130,7 @@
 
     // ─── 工具函数 ───────────────────────────────────────────────
     function log(msg, data) {
-        console.log(`[HeyGen Collector] ${msg}`, data || '');
+        console.log(`[Duck邮箱接码] ${msg}`, data || '');
     }
 
     function isGmailInbox() {
@@ -147,9 +176,10 @@
             sender: senderInfo || ''
         };
 
-        // 只匹配有效的激活链接
+        // 只匹配有效的激活链接（使用自定义关键词动态构建正则）
+        const escapedKw = _linkKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\//g, '\\/');
         const linkPatterns = [
-            /https:\/\/auth\.heygen\.com\/magic-web\/[^\s"'<>\\]+/g,
+            new RegExp(`https:\\/\\/${escapedKw}[^\\s"'<>\\\\]+`, 'g'),
         ];
 
         let foundLink = null;
@@ -297,6 +327,7 @@
 
                         let parsed = parseHeygenEmail(bodyText, senderEmail);
                         parsed.subject = subject;
+                        parsed.bodyText = bodyText;
 
                         // 优先用 DOM 链接
                         if (allLinks.length > 0) {
@@ -424,7 +455,7 @@
         try {
             const data = await clickAndReadEmail(row);
 
-            if (data && data.verifyLink && data.verifyLink.includes('auth.heygen.com/magic-web/')) {
+            if (data && data.verifyLink && data.verifyLink.includes(_linkKeyword)) {
                 log('成功提取数据', data);
                 // 点开邮件后从详情页再试一次（更准确的完整时间）
                 const detailTs = (() => {
@@ -456,15 +487,24 @@
             // 读完后短暂等待
             await new Promise(r => setTimeout(r, 400));
 
-            // 若该邮件不含有效 magic-web 链接且用户启用了自动丢垃圾箱 → 直接删除
+            // 若用户启用了自动丢垃圾箱，按自定义规则决定是否删除
             const hasLink = !!(data && data.verifyLink);
-            const shouldTrash = !hasLink && await _getAutoTrashFlag();
-            if (shouldTrash) {
-                const trashed = _clickTrashButton();
-                if (trashed) {
-                    log('已将非验证链接邮件移至垃圾箱');
-                    await new Promise(r => setTimeout(r, 1200));
-                    return;
+            const autoTrash = await _getAutoTrashFlag();
+            if (!hasLink && autoTrash) {
+                let shouldTrash = false;
+                if (_trashKeywords.length > 0) {
+                    const text = ((data && data.subject || '') + ' ' + (data && data.bodyText || '')).toLowerCase();
+                    shouldTrash = _trashKeywords.some(kw => kw && text.includes(kw.toLowerCase()));
+                } else {
+                    shouldTrash = true; // 默认：删所有不含激活链接的邮件
+                }
+                if (shouldTrash) {
+                    const trashed = _clickTrashButton();
+                    if (trashed) {
+                        log('已将邮件移至垃圾箱');
+                        await new Promise(r => setTimeout(r, 1200));
+                        return;
+                    }
                 }
             }
 
@@ -902,10 +942,10 @@
   background:#0d1117;
 }
 </style>
-<div id="fab" title="展开 HeyGen Collector 浮窗">HGC</div>
+<div id="fab" title="展开 Duck邮箱接码 浮窗">🦆</div>
 <div id="panel">
   <div id="drag-bar">
-    <span class="drag-title">HeyGen Collector · 拖动移动 / 右下角调整大小</span>
+    <span class="drag-title">Duck邮箱接码 · 拖动移动 / 右下角调整大小</span>
     <div class="drag-btns">
       <button class="drag-btn" id="btn-hide" title="最小化"></button>
       <button class="drag-btn" id="btn-close" title="关闭浮窗"></button>
@@ -1131,5 +1171,5 @@
         return null;
     }
 
-    log('Content script 已加载');
+    log('Duck邮箱接码 content script 已加载');
 })();

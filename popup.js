@@ -1,4 +1,7 @@
-// HeyGen Gmail Collector - Popup Script
+// Duck邮箱接码 - Popup Script
+
+const DEFAULT_LINK_KEYWORD = 'auth.heygen.com/magic-web/';
+let _linkKeyword = DEFAULT_LINK_KEYWORD;
 
 let allData = [];
 let allAccounts = [];
@@ -158,7 +161,7 @@ function renderTable(data) {
     : withLinks;
 
   el.countDisplay.textContent = withLinks.length;
-  el.footerInfo.textContent = `v1.4.1 · 共 ${withLinks.length} 条 · 显示 ${filtered.length} 条`;
+  el.footerInfo.textContent = `v1.5.0 · 共 ${withLinks.length} 条 · 显示 ${filtered.length} 条`;
 
   // Clear existing rows (keep header intact)
   const existingRows = el.tableContainer.querySelectorAll('.email-row');
@@ -326,7 +329,7 @@ function formatRelTime(ms) {
 function applyAccountFilter(accounts) {
   // 只保留抓到过 magic-web 验证链接的账号
   let list = [...accounts]
-    .filter(a => (a.latestLink || '').includes('auth.heygen.com/magic-web/'))
+    .filter(a => (a.latestLink || '').includes(_linkKeyword))
     .sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
   if (accSearchQuery) list = list.filter(a => (a.email||'').toLowerCase().includes(accSearchQuery));
   if (filterMode === 'older' && filterOlderMs > 0) {
@@ -344,7 +347,7 @@ function renderAccounts(accounts) {
   const countEl = document.getElementById('accCountDisplay');
   if (!container) return;
 
-  const validAccounts = accounts.filter(a => (a.latestLink || '').includes('auth.heygen.com/magic-web/'));
+  const validAccounts = accounts.filter(a => (a.latestLink || '').includes(_linkKeyword));
   countEl.textContent = validAccounts.length;
   const filtered = applyAccountFilter(accounts);
   container.querySelectorAll('.acc-row').forEach(r => r.remove());
@@ -759,7 +762,7 @@ el.btnCopyAll.onclick = async () => {
 
 el.btnExportCSV.onclick = () => {
   if (allData.length === 0) { showToast('没有数据可导出'); return; }
-  const header = '序号,HeyGen账号,验证链接,收件时间\n';
+  const header = '序号,注册账号,验证链接,收件时间\n';
   const rows = allData.map((d, i) =>
     `${i + 1},"${d.account || ''}","${d.verifyLink || ''}","${d.receivedAt || d.capturedAt || ''}"`
   ).join('\n');
@@ -785,7 +788,7 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'NEW_HEYGEN_DATA') {
     loadData();
     const hasLink = message.data && message.data.verifyLink &&
-      message.data.verifyLink.includes('auth.heygen.com/magic-web/');
+      message.data.verifyLink.includes(_linkKeyword);
     if (hasLink) {
       showToast('新验证链接已捕获！');
       renderDuckTab(); // 刷新 Duck tab，点亮对应行的链接按钮
@@ -807,6 +810,9 @@ chrome.runtime.onMessage.addListener((message) => {
 // 兜底：storage 变化时自动刷新（tab-mode 下长时间打开不漏数据）
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
+  if (changes.customLinkKeyword) {
+    _linkKeyword = changes.customLinkKeyword.newValue || DEFAULT_LINK_KEYWORD;
+  }
   if (changes.heygenData || changes.heygenAccounts) loadData();
 });
 
@@ -886,6 +892,36 @@ function hideScanProgress() {
 
 // ─── P5: Settings Tab ────────────────────────────────────────
 function initSettingsTab() {
+  // restore custom link keyword + trash keywords
+  chrome.storage.local.get(['customLinkKeyword', 'trashKeywords'], (r) => {
+    const kwEl = document.getElementById('customLinkKeywordInput');
+    if (kwEl) kwEl.value = r.customLinkKeyword || '';
+    const tkEl = document.getElementById('trashKeywordsInput');
+    if (tkEl) tkEl.value = (r.trashKeywords || []).join('\n');
+  });
+
+  document.getElementById('btnSaveLinkKeyword').onclick = () => {
+    const val = (document.getElementById('customLinkKeywordInput').value || '').trim();
+    const kw = val || DEFAULT_LINK_KEYWORD;
+    chrome.storage.local.set({ customLinkKeyword: kw });
+    _linkKeyword = kw;
+    showToast('✓ 激活链接关键词已保存，请重新扫描收件箱');
+  };
+
+  document.getElementById('btnResetLinkKeyword').onclick = () => {
+    document.getElementById('customLinkKeywordInput').value = '';
+    chrome.storage.local.set({ customLinkKeyword: DEFAULT_LINK_KEYWORD });
+    _linkKeyword = DEFAULT_LINK_KEYWORD;
+    showToast('✓ 已恢复默认链接关键词');
+  };
+
+  document.getElementById('btnSaveTrashKeywords').onclick = () => {
+    const lines = (document.getElementById('trashKeywordsInput').value || '')
+      .split('\n').map(s => s.trim()).filter(Boolean);
+    chrome.storage.local.set({ trashKeywords: lines });
+    showToast(`✓ 垃圾邮件关键词已保存（${lines.length} 条）`);
+  };
+
   // restore saved settings
   chrome.storage.local.get(['sheetsSyncConfig', 'savedClientId', 'lastSyncAt', 'autoTrashNonVerify', 'monitorScope'], (r) => {
     const scope = r.monitorScope || { mode: 'any', labels: [] };
@@ -974,7 +1010,7 @@ document.getElementById('toggleSheetsSync').onchange = (e) => {
     const cfg = Object.assign({}, r.sheetsSyncConfig || {}, {
       enabled: e.target.checked,
       spreadsheetId: sheetId || (r.sheetsSyncConfig || {}).spreadsheetId || '',
-      sheetName: 'HeyGen Accounts'
+      sheetName: 'Duck邮箱接码'
     });
     chrome.storage.local.set({ sheetsSyncConfig: cfg });
   });
@@ -995,8 +1031,8 @@ document.getElementById('btnSyncNow').onclick = async () => {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            properties: { title: 'HeyGen Collector 备份' },
-            sheets: [{ properties: { title: 'HeyGen Accounts' } }]
+            properties: { title: 'Duck邮箱接码备份' },
+            sheets: [{ properties: { title: 'Duck邮箱接码' } }]
           })
         });
         const data = await res.json();
@@ -1013,7 +1049,7 @@ document.getElementById('btnSyncNow').onclick = async () => {
 };
 
 function saveSheetsConfig(sheetId) {
-  const cfg = { enabled: document.getElementById('toggleSheetsSync').checked, spreadsheetId: sheetId, sheetName: 'HeyGen Accounts' };
+  const cfg = { enabled: document.getElementById('toggleSheetsSync').checked, spreadsheetId: sheetId, sheetName: 'Duck邮箱接码' };
   chrome.storage.local.set({ sheetsSyncConfig: cfg });
 }
 
@@ -1502,7 +1538,7 @@ async function duckOneClickGenerate() {
 
     if (!genRes?.found) {
       // 找不到按钮 → 把 tab 切到前台让用户手动操作，并把按钮列表存到 console 供调试
-      console.warn('[HeyGen] DDG Generate 按钮未找到，已有按钮：', genRes?.btnTexts);
+      console.warn('[Duck邮箱接码] DDG Generate 按钮未找到，已有按钮：', genRes?.btnTexts);
       await chrome.tabs.update(tabId, { active: true });
       tabId = null;
       showToast('未找到 Generate 按钮，已打开页面，请手动操作');
@@ -1698,6 +1734,11 @@ function initDuckTab() {
 async function init() {
   // 如果在独立标签页打开，切换为全屏模式
   if (window.innerWidth > 700) document.body.classList.add('tab-mode');
+  // 先加载链接关键词，确保渲染时已正确过滤
+  await new Promise(resolve => chrome.storage.local.get(['customLinkKeyword'], r => {
+    _linkKeyword = r.customLinkKeyword || DEFAULT_LINK_KEYWORD;
+    resolve();
+  }));
   loadReadLinks();
   initSortHeaders();
   initSettingsTab();

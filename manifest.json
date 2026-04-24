@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Heygen Helper T4 / Gmail Collector",
-    "version": "1.4.1",
-    "description": "自动收集 Gmail 中 HeyGen 注册验证链接，整理账号与验证码数据",
+    "name": "Duck邮箱接码",
+    "version": "1.5.0",
+    "description": "自动捕获 Gmail 中 HeyGen 验证链接，配合 DuckDuckGo 私密邮箱批量接码",
     "permissions": [
         "storage",
         "activeTab",

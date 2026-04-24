@@ -1,4 +1,4 @@
-// HeyGen Gmail Collector — DuckDuckGo Content Script
+// Duck邮箱接码 — DuckDuckGo Content Script
 // 运行在 duckduckgo.com/email/* 页面（ISOLATED world）
 // 接收来自 ddg-page-interceptor.js（MAIN world）的 postMessage，
 // 把捕获到的 Duck 地址存入 chrome.storage.local
@@ -37,7 +37,7 @@
       chrome.storage.local.set({ ddgAddresses: list.slice(0, 100) });
       // 通知 popup 更新列表
       chrome.runtime.sendMessage({ type: 'DDG_ADDRESS_CAPTURED', address }).catch(() => {});
-      console.log('[HeyGen Collector] Duck 地址已保存:', address);
+      console.log('[Duck邮箱接码] Duck 地址已保存:', address);
     });
   }
 
@@ -64,7 +64,7 @@
 
     banner.innerHTML = `
       <span style="width:7px;height:7px;border-radius:50%;background:#007AFF;flex-shrink:0"></span>
-      <span>HeyGen 插件已就绪：点击「Copy」后地址会自动记录</span>
+      <span>Duck邮箱接码已就绪：点击「Copy」后地址会自动记录</span>
     `;
     document.body.appendChild(banner);
     setTimeout(() => {
