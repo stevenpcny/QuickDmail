@@ -712,7 +712,8 @@
                 if (!senderEl) continue;
                 const senderAttr = (senderEl.getAttribute('email') || '').toLowerCase();
                 // HeyGen sender 属性格式：no_reply_at_email.heygen.com_<recipient>
-                if (senderAttr.includes(accountLow.split('@')[0])) {
+                // 用完整邮箱匹配，避免前缀相似账号（abc vs abc123）误标
+                if (senderAttr.includes(accountLow)) {
                     row = r;
                     break;
                 }

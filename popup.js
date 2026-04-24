@@ -58,6 +58,15 @@ const el = {
   notGmailWarning: document.getElementById('notGmailWarning'),
 };
 
+// ─── HTML 转义（防止邮箱/链接中特殊字符破坏 innerHTML 属性）────
+function escHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // ─── Toast ───────────────────────────────────────────────────
 function showToast(msg, duration = 2000) {
   el.toast.textContent = msg;
@@ -182,26 +191,29 @@ function renderTable(data) {
 
     const tid = item.gmailThreadId || '';
     const acc = item.account || '';
+    const eAcc  = escHtml(acc);
+    const eLink = escHtml(item.verifyLink || '');
+    const eTid  = escHtml(tid);
     row.innerHTML = `
-      <div class="cell-account" title="${acc || '未识别'}">
-        ${acc || '<span style="color:var(--text-muted)">未识别</span>'}
+      <div class="cell-account" title="${eAcc || '未识别'}">
+        ${eAcc || '<span style="color:var(--text-muted)">未识别</span>'}
       </div>
       <div class="cell-link">
         <div class="link-display ${item.verifyLink ? '' : 'no-link'}"
              title="${item.verifyLink ? '点击复制 · 可拖拽到其他浏览器' : '未提取到链接'}"
-             data-link="${item.verifyLink || ''}"
-             data-id="${item.id || ''}"
-             data-thread-id="${tid}"
-             data-account="${acc}"
+             data-link="${eLink}"
+             data-id="${escHtml(item.id || '')}"
+             data-thread-id="${eTid}"
+             data-account="${eAcc}"
              draggable="${item.verifyLink ? 'true' : 'false'}">
-          ${shortLink}
+          ${escHtml(shortLink)}
         </div>
       </div>
       <div class="cell-time">${timeStr}</div>
       <div class="cell-actions">
-        <button class="action-btn btn-copy-link" title="复制链接" data-link="${item.verifyLink || ''}" data-id="${item.id || ''}" data-thread-id="${tid}" data-account="${acc}" ${!item.verifyLink ? 'disabled' : ''}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-        <button class="action-btn btn-copy-row" title="复制整行（账号 + 链接）" data-account="${acc}" data-link="${item.verifyLink || ''}" data-id="${item.id || ''}" data-thread-id="${tid}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
-        <button class="action-btn btn-open-link" title="在新标签页打开链接" data-link="${item.verifyLink || ''}" data-id="${item.id || ''}" data-thread-id="${tid}" data-account="${acc}" ${!item.verifyLink ? 'disabled' : ''}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button class="action-btn btn-copy-link" title="复制链接" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}" data-account="${eAcc}" ${!item.verifyLink ? 'disabled' : ''}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button class="action-btn btn-copy-row" title="复制整行（账号 + 链接）" data-account="${eAcc}" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+        <button class="action-btn btn-open-link" title="在新标签页打开链接" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}" data-account="${eAcc}" ${!item.verifyLink ? 'disabled' : ''}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
       </div>
     `;
 

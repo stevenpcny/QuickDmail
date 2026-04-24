@@ -1,8 +1,11 @@
 // HeyGen Gmail Collector - Background Service Worker
 
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('[HeyGen Collector] 插件已安装');
-  chrome.storage.local.set({ autoStart: true, heygenData: [] });
+chrome.runtime.onInstalled.addListener((details) => {
+  console.log('[HeyGen Collector] 插件已安装/更新:', details.reason);
+  // 仅在首次安装时初始化数据，避免扩展更新时清空用户历史
+  if (details.reason === 'install') {
+    chrome.storage.local.set({ autoStart: true, heygenData: [] });
+  }
   chrome.alarms.create('sheetsSync', { periodInMinutes: 15 });
 });
 
@@ -113,6 +116,11 @@ async function syncPendingToSheets() {
       ])
     ];
 
+    // 写入前先清除旧内容，防止数据减少时残留旧行
+    await sheetsRequest(token, 'POST',
+      `/values/${encodeURIComponent(sheetName + '!A1:Z')}:clear`,
+      sheetId, {}
+    );
     await sheetsRequest(token, 'PUT',
       `/values/${encodeURIComponent(sheetName + '!A1')}?valueInputOption=RAW`,
       sheetId, { values }
@@ -209,6 +217,10 @@ async function syncDuckToSheets() {
     ])
   ];
 
+  await sheetsRequest(token, 'POST',
+    `/values/${encodeURIComponent(tabName + '!A1:Z')}:clear`,
+    sheetId, {}
+  );
   await sheetsRequest(token, 'PUT',
     `/values/${encodeURIComponent(tabName + '!A1')}?valueInputOption=RAW`,
     sheetId, { values }
