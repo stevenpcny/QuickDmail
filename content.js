@@ -875,7 +875,7 @@
         if (document.getElementById('hgc-float-host')) return;
 
         const POPUP_URL = chrome.runtime.getURL('popup.html') + '?float=1';
-        const DEFAULT_W = 760, DEFAULT_H = 700;
+        const DEFAULT_W = 500, DEFAULT_H = 640;
 
         // 读取上次位置
         chrome.storage.local.get(['floatPos'], (r) => {
@@ -916,7 +916,7 @@
   box-shadow:0 8px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);
   display:flex;flex-direction:column;
   resize:both;
-  min-width:400px;min-height:300px;
+  min-width:460px;min-height:300px;
 }
 #drag-bar{
   height:28px;

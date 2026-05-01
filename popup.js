@@ -101,13 +101,13 @@ function setStatus(monitoring) {
   if (monitoring) {
     el.statusBadge.className = 'status-badge active';
     el.statusText.textContent = '监控中';
-    el.btnStart.disabled = true;
-    el.btnStop.disabled = false;
+    el.btnStart.style.display = 'none';
+    el.btnStop.style.display = '';
   } else {
     el.statusBadge.className = 'status-badge inactive';
     el.statusText.textContent = '已停止';
-    el.btnStart.disabled = false;
-    el.btnStop.disabled = true;
+    el.btnStart.style.display = '';
+    el.btnStop.style.display = 'none';
   }
 }
 
@@ -161,7 +161,7 @@ function renderTable(data) {
     : withLinks;
 
   el.countDisplay.textContent = withLinks.length;
-  el.footerInfo.textContent = `v1.5.0 · 共 ${withLinks.length} 条 · 显示 ${filtered.length} 条`;
+  el.footerInfo.textContent = `v1.5.0 · Duck邮箱接码`;
 
   // Clear existing rows (keep header intact)
   const existingRows = el.tableContainer.querySelectorAll('.email-row');
@@ -213,10 +213,19 @@ function renderTable(data) {
         </div>
       </div>
       <div class="cell-time">${timeStr}</div>
-      <div class="cell-actions">
-        <button class="action-btn btn-copy-link" title="复制链接" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}" data-account="${eAcc}" ${!item.verifyLink ? 'disabled' : ''}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-        <button class="action-btn btn-copy-row" title="复制整行（账号 + 链接）" data-account="${eAcc}" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+      <div class="cell-actions" style="position:relative">
         <button class="action-btn btn-open-link" title="在新标签页打开链接" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}" data-account="${eAcc}" ${!item.verifyLink ? 'disabled' : ''}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button class="action-btn btn-row-more" title="更多操作" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}" data-account="${eAcc}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg></button>
+        <div class="row-more-menu" style="display:none;position:absolute;right:0;top:calc(100% + 2px);z-index:200;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:4px;min-width:130px;box-shadow:var(--shadow-md)">
+          <button class="more-item btn-copy-link" title="复制链接" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}" data-account="${eAcc}" ${!item.verifyLink ? 'disabled' : ''}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            复制链接
+          </button>
+          <button class="more-item btn-copy-row" title="复制整行（账号 + 链接）" data-account="${eAcc}" data-link="${eLink}" data-id="${escHtml(item.id || '')}" data-thread-id="${eTid}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            复制整行
+          </button>
+        </div>
       </div>
     `;
 
@@ -269,6 +278,26 @@ function renderTable(data) {
         markLinkRead(id);
         markGmailRead(threadId, account);
         chrome.tabs.create({ url: link });
+      }
+    };
+  });
+
+  // Row more-menu toggle
+  el.tableContainer.querySelectorAll('.btn-row-more').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const menu = btn.nextElementSibling;
+      const isVisible = menu.style.display !== 'none';
+      // Close all other open row menus
+      el.tableContainer.querySelectorAll('.row-more-menu').forEach(m => { m.style.display = 'none'; });
+      if (!isVisible) {
+        menu.style.display = 'block';
+        // Reposition if near bottom
+        const rect = menu.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight - 8) {
+          menu.style.top = 'auto';
+          menu.style.bottom = 'calc(100% + 2px)';
+        }
       }
     };
   });
@@ -407,16 +436,48 @@ function updateSelToolbar() {
   toolbar.classList.toggle('visible', n > 0);
 }
 
-// ─── Tab Switching ───────────────────────────────────────────
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.onclick = () => {
-    const tab = btn.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-    document.querySelectorAll('.tab-panel').forEach(p => {
-      p.classList.toggle('active', p.id === 'tab-' + tab);
-    });
+// ─── View Switching ──────────────────────────────────────────
+let currentViewId = 'mainDuckView';
+let currentRecordsViewId = 'recordsLinksView';
+
+function showView(viewId) {
+  document.querySelectorAll('.view-container').forEach(view => {
+    view.classList.toggle('active', view.id === viewId);
+  });
+  currentViewId = viewId;
+  if (viewId === 'mainDuckView') renderDuckTab();
+}
+
+function showRecordsView(viewId) {
+  document.querySelectorAll('.record-subview').forEach(view => {
+    view.classList.toggle('active', view.id === viewId);
+  });
+  document.querySelectorAll('.record-subtab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.recordView === viewId);
+  });
+  currentRecordsViewId = viewId;
+}
+
+function initViewSwitching() {
+  document.getElementById('btnOpenRecords').onclick = () => {
+    showView('recordsView');
+    showRecordsView(currentRecordsViewId);
   };
-});
+  document.getElementById('btnOpenSettings').onclick = () => {
+    showView('settingsView');
+  };
+  document.getElementById('btnBackFromRecords').onclick = () => {
+    showView('mainDuckView');
+  };
+  document.getElementById('btnBackFromSettings').onclick = () => {
+    showView('mainDuckView');
+  };
+  document.querySelectorAll('.record-subtab-btn').forEach(btn => {
+    btn.onclick = () => showRecordsView(btn.dataset.recordView);
+  });
+  showView('mainDuckView');
+  showRecordsView(currentRecordsViewId);
+}
 
 // ─── Accounts Tab Events ─────────────────────────────────────
 document.getElementById('accSearchInput').oninput = (e) => {
@@ -669,6 +730,15 @@ function markGmailRead(gmailThreadId, account) {
 }
 
 // ─── Expand to Tab ───────────────────────────────────────────
+const _isFloat  = new URLSearchParams(location.search).get('float')  === '1';
+const _isPopout = new URLSearchParams(location.search).get('popout') === '1';
+
+// 浮窗/独立窗口模式下隐藏弹出和展开按钮（已无意义）
+if (_isFloat || _isPopout) {
+  document.getElementById('btnExpand')?.style.setProperty('display', 'none');
+  document.getElementById('btnPopout')?.style.setProperty('display', 'none');
+}
+
 document.getElementById('btnExpand').onclick = () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('popup.html') });
 };
@@ -703,6 +773,41 @@ if (btnPopout) {
 }
 
 // ─── Button Handlers ─────────────────────────────────────────
+
+// Global: close any open dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#ctrlMoreWrap')) {
+    const m = document.getElementById('ctrlMoreMenu');
+    if (m) m.style.display = 'none';
+  }
+  if (!e.target.closest('.cell-actions')) {
+    document.querySelectorAll('.row-more-menu').forEach(m => { m.style.display = 'none'; });
+  }
+});
+
+// Ctrl-bar more menu toggle
+const ctrlMoreBtn = document.getElementById('btnCtrlMore');
+const ctrlMoreMenu = document.getElementById('ctrlMoreMenu');
+if (ctrlMoreBtn && ctrlMoreMenu) {
+  ctrlMoreBtn.onclick = (e) => {
+    e.stopPropagation();
+    ctrlMoreMenu.style.display = ctrlMoreMenu.style.display === 'none' ? 'block' : 'none';
+  };
+  // Close menu when any item inside is clicked
+  ctrlMoreMenu.addEventListener('click', () => {
+    ctrlMoreMenu.style.display = 'none';
+  });
+}
+
+el.statusBadge.style.cursor = 'pointer';
+el.statusBadge.onclick = () => {
+  if (el.statusBadge.classList.contains('active')) {
+    el.btnStop.onclick();
+  } else {
+    el.btnStart.onclick();
+  }
+};
+
 el.btnStart.onclick = async () => {
   const isGmail = await checkCurrentTab();
   if (!isGmail) {
@@ -1226,17 +1331,20 @@ async function renderDuckTab() {
   _mergeDuckFromHeygenData(allLinks, stored.ddgAddresses || []);
   const history = stored.ddgAddresses || [];
 
-  // 更新 token 状态指示器
-  const statusEl = document.getElementById('duckTokenStatus');
-  if (statusEl) {
-    statusEl.innerHTML = _ddgToken
-      ? `<span style="color:var(--accent-green)">● token 已配置</span>`
-      : `<span style="color:var(--text-muted)">○ 未配置 token</span>`;
+  // 有 token → 直接生成升为主按钮；无 token → 一键自动生成为主按钮
+  const btnAutoGen = document.getElementById('btnDuckAutoGenerate');
+  const btnGen     = document.getElementById('btnDuckGenerate');
+  if (btnAutoGen && btnGen) {
+    if (_ddgToken) {
+      btnGen.className     = 'btn btn-primary';
+      btnGen.style.display = '';
+      btnAutoGen.style.display = 'none';
+    } else {
+      btnAutoGen.className     = 'btn btn-primary';
+      btnAutoGen.style.display = '';
+      btnGen.style.display     = 'none';
+    }
   }
-
-  // 显示/隐藏「直接生成」按钮（仅有 token 时才有意义）
-  const btnGen = document.getElementById('btnDuckGenerate');
-  if (btnGen) btnGen.style.display = _ddgToken ? '' : 'none';
 
   // 更新 token 已保存提示区
   const savedEl = document.getElementById('duckTokenSaved');
@@ -1287,7 +1395,8 @@ function _renderDuckHistory(history, allLinks) {
   sorted.forEach((item, idx) => {
     // 查找匹配的验证链接
     const matchedLink = _findLinkForDuck(item, history, links);
-    const hasLink = !!(matchedLink && matchedLink.verifyLink);
+    const linkUsed = !!(matchedLink && matchedLink.id && readLinks.has(matchedLink.id));
+    const hasLink = !!(matchedLink && matchedLink.verifyLink) && !linkUsed;
 
     const row = document.createElement('div');
     const isNew = idx === 0 && item.address === _ddgLatestAddr;
@@ -1315,9 +1424,10 @@ function _renderDuckHistory(history, allLinks) {
       ${srcBadge}
       <span class="duck-row-time">${timeStr}</span>
       <button class="duck-link-btn ${hasLink ? 'has-link' : ''}"
-              title="${hasLink ? '点击复制验证链接：' + matchedLink.verifyLink.substring(0, 60) + '…' : '等待验证邮件到达…'}"
-              data-link="${hasLink ? matchedLink.verifyLink : ''}"
-              ${!hasLink ? 'disabled' : ''}>
+              title="${hasLink ? '点击复制验证链接：' + matchedLink.verifyLink.substring(0, 60) + '…' : (linkUsed ? '已使用（点击可再次复制）' : '等待验证邮件到达…')}"
+              data-link="${matchedLink ? escHtml(matchedLink.verifyLink || '') : ''}"
+              data-id="${matchedLink ? escHtml(matchedLink.id || '') : ''}"
+              ${!matchedLink || !matchedLink.verifyLink ? 'disabled' : ''}>
         ${SVG_LINK} 链接
       </button>
       <button class="action-btn duck-copy-btn" title="复制 Duck 地址" data-addr="${item.address}">${DUCK_SVG_COPY}</button>
@@ -1329,12 +1439,13 @@ function _renderDuckHistory(history, allLinks) {
   const SVG_LINK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
   const SVG_CHECK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-  listEl.querySelectorAll('.duck-link-btn.has-link').forEach(btn => {
+  listEl.querySelectorAll('.duck-link-btn[data-link]:not([data-link=""])').forEach(btn => {
     // 点击复制
     btn.onclick = async (e) => {
-      const link = e.currentTarget.dataset.link;
+      const { link, id } = e.currentTarget.dataset;
       if (!link) return;
       await copyText(link);
+      markLinkRead(id);
       _duckMarkLinkUsed(e.currentTarget);
       showToast('✓ 验证链接已复制');
     };
@@ -1350,6 +1461,7 @@ function _renderDuckHistory(history, allLinks) {
     });
     btn.addEventListener('dragend', e => {
       if (e.dataTransfer.dropEffect !== 'none') {
+        markLinkRead(btn.dataset.id);
         _duckMarkLinkUsed(btn);
         showToast('✓ 验证链接已拖出');
       }
@@ -1628,17 +1740,6 @@ function initDuckTab() {
     };
   }
 
-  // Token 配置折叠切换
-  const tokenToggle = document.getElementById('duckTokenToggle');
-  const tokenArea   = document.getElementById('duckTokenArea');
-  if (tokenToggle && tokenArea) {
-    tokenToggle.onclick = () => {
-      const open = tokenArea.style.display !== 'none';
-      tokenArea.style.display = open ? 'none' : 'block';
-      tokenToggle.textContent = open ? '配置 token（用于直接生成）' : '收起';
-    };
-  }
-
   // 手动保存 token
   const btnManualSave = document.getElementById('btnDuckManualSave');
   const manualInput   = document.getElementById('duckManualToken');
@@ -1741,6 +1842,7 @@ async function init() {
   }));
   loadReadLinks();
   initSortHeaders();
+  initViewSwitching();
   initSettingsTab();
   initDuckTab();
   const isGmail = await checkCurrentTab();

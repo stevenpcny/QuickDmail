@@ -27,7 +27,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      width: 680px;
+      width: 460px;
       min-height: 500px;
       max-height: 700px;
     }
@@ -343,6 +343,19 @@
     .action-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--accent-cyan-dim); }
     .action-btn.copied { border-color: var(--accent-green); color: var(--accent-green); background: var(--accent-green-dim); }
 
+    /* ── MORE DROPDOWN ── */
+    .more-dropdown { font-size: 12px; }
+    .more-item {
+      display: flex; align-items: center; gap: 7px;
+      width: 100%; padding: 6px 10px; border: none; border-radius: 6px;
+      background: transparent; color: var(--text-primary); cursor: pointer;
+      font-size: 12px; text-align: left; white-space: nowrap;
+      transition: background 0.1s;
+    }
+    .more-item:hover { background: var(--bg-primary); }
+    .more-item-danger { color: var(--danger); }
+    .more-item-danger:hover { background: rgba(239,68,68,0.08); }
+
     /* ── EMPTY STATE ── */
     .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 22px; text-align: center; gap: 10px; }
     .empty-icon { font-size: 38px; opacity: 0.22; color: var(--text-secondary); }
@@ -375,18 +388,90 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── TABS ── */
-    .tab-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-secondary); padding: 0 16px; }
-    .tab-btn {
-      padding: 10px 16px;
-      background: transparent; border: none; border-bottom: 2px solid transparent;
-      color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .tab-btn:hover { color: var(--text-primary); }
-    .tab-btn.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); font-weight: 600; }
-    .tab-btn svg { transition: color 0.15s; }
-    .tab-panel { display: none; flex-direction: column; flex: 1; min-height: 0; }
-    .tab-panel.active { display: flex; }
+
+    .header-nav-btn {
+      padding: 5px 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .header-nav-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .view-container {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .view-container.active { display: flex; }
+
+    .secondary-view-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .secondary-view-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .record-subtabs {
+      display: flex;
+      gap: 6px;
+      padding: 10px 16px 0;
+      background: var(--bg-primary);
+    }
+
+    .record-subtab-btn {
+      padding: 5px 10px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .record-subtab-btn.active {
+      color: var(--accent-cyan);
+      border-color: rgba(0,122,255,0.25);
+      background: var(--accent-cyan-dim);
+    }
+
+    .record-subview {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .record-subview.active { display: flex; }
 
     /* ── ACCOUNTS TAB ── */
     .acc-table-header {
@@ -601,51 +686,73 @@
 
   <!-- HEADER -->
   <div class="header">
-    <div class="logo">
-      <div class="logo-icon">
-        <!-- envelope + spark icon -->
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="5" width="20" height="14" rx="2"/>
-          <polyline points="2,5 12,13 22,5"/>
-        </svg>
-      </div>
-      <div class="logo-text">Duck <span>邮箱接码</span></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button id="btnPopout" title="弹出为浮窗（独立小窗口，可拖到 Gmail 旁边，切走不会关）" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;padding:5px 7px;line-height:1;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.color='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-      </button>
-      <button id="btnExpand" title="在新标签页打开完整界面" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;padding:5px 7px;line-height:1;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.color='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-      </button>
+    <div class="header-actions" style="width:100%">
       <div class="status-badge inactive" id="statusBadge">
         <div class="status-dot"></div>
         <span id="statusText">已停止</span>
       </div>
+      <button class="btn btn-primary" id="btnDuckAutoGenerate" style="padding:5px 11px;font-size:12px" title="自动打开 DDG 页面并点击 Generate → Copy">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        生成邮箱
+      </button>
+      <button class="btn btn-ghost" id="btnDuckGenerate" style="display:none;padding:5px 11px;font-size:12px" title="直接调用 API 生成，无需打开浏览器页面">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        生成邮箱
+      </button>
+      <button id="btnOpenRecords" class="header-nav-btn" title="查看记录">记录</button>
+      <button class="btn btn-ghost" id="btnDuckOpenPage" style="padding:5px 11px;font-size:12px" title="手动打开 DDG 页面自行操作">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        打开 DDG
+      </button>
+      <button id="btnOpenSettings" class="header-nav-btn" title="打开设置" aria-label="设置">⚙</button>
+      <button id="btnPopout" class="header-nav-btn" title="弹出为浮窗（独立小窗口，可拖到 Gmail 旁边，切走不会关）">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </button>
+      <button id="btnExpand" class="header-nav-btn" title="在新标签页打开完整界面">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      </button>
     </div>
   </div>
 
   <!-- MAIN CONTENT -->
   <div id="mainContent" style="display:flex;flex-direction:column;flex:1;min-height:0;">
 
-    <!-- TAB BAR -->
-    <div class="tab-bar">
-      <button class="tab-btn active" data-tab="links">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>链接
-      </button>
-      <button class="tab-btn" data-tab="accounts">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>账号
-      </button>
-      <button class="tab-btn" data-tab="duck">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Duck
-      </button>
-      <button class="tab-btn" data-tab="settings">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>设置
-      </button>
-    </div>
+    <div class="view-container active" id="mainDuckView">
 
-    <!-- TAB: LINKS -->
-    <div class="tab-panel active" id="tab-links">
+      <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+
+      <!-- 最新生成结果框 -->
+      <div class="duck-result-box" id="duckResultBox" style="margin:8px 16px 0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span class="duck-result-addr" id="duckResultAddr"></span>
+        <button class="action-btn" id="btnDuckCopyResult" title="复制地址">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+
+      <!-- 历史记录（始终显示） -->
+      <div class="duck-history-section">
+        <div class="duck-history-header">
+          <span id="duckHistoryCount" style="color:var(--text-secondary)">历史地址</span>
+        </div>
+        <div class="duck-history-list" id="duckHistoryList"></div>
+      </div>
+
+      </div>
+
+    </div><!-- /#mainDuckView -->
+
+    <div class="view-container" id="recordsView">
+      <div class="secondary-view-header">
+        <button class="btn btn-ghost" id="btnBackFromRecords" style="padding:5px 10px">←</button>
+        <div class="secondary-view-title">记录</div>
+      </div>
+      <div class="record-subtabs">
+        <button class="record-subtab-btn active" data-record-view="recordsLinksView">链接列表</button>
+        <button class="record-subtab-btn" data-record-view="recordsAccountsView">账号汇总</button>
+      </div>
+
+      <div class="record-subview active" id="recordsLinksView">
 
     <!-- CONTROLS -->
     <div class="controls">
@@ -653,24 +760,34 @@
         <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
         开始监控
       </button>
-      <button class="btn btn-ghost" id="btnStop" disabled title="关闭后台监控：停止所有实时扫描（DOM + 网络拦截）">
+      <button class="btn btn-danger" id="btnStop" style="display:none" title="关闭后台监控：停止所有实时扫描（DOM + 网络拦截）">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-        停止
+        停止监控
       </button>
       <button class="btn btn-ghost" id="btnScan" title="扫描当前页：只扫 Gmail 当前视图里已加载的邮件行，不翻页，秒级完成">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         扫描当前页
       </button>
-      <button class="btn btn-ghost" id="btnFullScan" title="扫描全部历史：跳转到 from:heygen.com 搜索，自动翻页直到最后一页，适合首次使用或清空后重建">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-        扫描全部历史
-      </button>
-      <button class="btn btn-danger" id="btnClear" title="清空所有已收集的链接和账号记录，并重置去重集合以便重新扫描">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        清空
-      </button>
-      <div class="count-chip">
-        已收集 <span class="count-number" id="countDisplay">0</span> 条
+      <div style="position:relative;margin-left:auto" id="ctrlMoreWrap">
+        <button class="btn btn-ghost" id="btnCtrlMore" title="更多操作" style="padding:0 8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+        <div id="ctrlMoreMenu" class="more-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 4px);z-index:100;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:4px;min-width:150px;box-shadow:var(--shadow-md)">
+          <button class="more-item" id="btnFullScan" title="跳转到 from:heygen.com 搜索，自动翻页直到最后一页">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            扫描全部历史
+          </button>
+          <div style="height:1px;background:var(--border);margin:3px 0"></div>
+          <label class="more-item" style="cursor:pointer" title="自动复制新链接">
+            <input type="checkbox" id="toggleLinkRotation" style="accent-color:var(--accent-cyan);cursor:pointer;width:12px;height:12px">
+            自动复制新链接
+          </label>
+          <div style="height:1px;background:var(--border);margin:3px 0"></div>
+          <button class="more-item more-item-danger" id="btnClear" title="清空所有已收集的链接和账号记录，并重置去重集合以便重新扫描">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            清空记录
+          </button>
+        </div>
       </div>
     </div>
 
@@ -682,12 +799,15 @@
     </div>
 
     <!-- SEARCH -->
-    <div class="search-bar">
-      <div class="search-wrapper">
+    <div class="search-bar" style="display:flex;align-items:center;gap:8px">
+      <div class="search-wrapper" style="flex:1">
         <span class="search-icon">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input type="text" class="search-input" id="searchInput" placeholder="搜索账号或链接...">
+      </div>
+      <div class="count-chip" style="flex-shrink:0">
+        <span class="count-number" id="countDisplay">0</span> 条
       </div>
     </div>
 
@@ -727,19 +847,14 @@
     <div class="footer">
       <div class="footer-info" id="footerInfo">v1.5.0 · Duck邮箱接码</div>
       <div class="footer-actions">
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10px;color:var(--text-secondary)">
-          <input type="checkbox" id="toggleLinkRotation" style="accent-color:var(--accent-cyan);cursor:pointer">
-          自动复制新链接
-        </label>
         <button class="export-btn" id="btnCopyAll" title="把当前列表所有链接复制到剪贴板，每行一条">复制全部</button>
         <button class="export-btn" id="btnExportCSV" title="导出链接列表为 CSV 文件（含账号、验证链接、捕获时间）">导出 CSV</button>
       </div>
     </div>
 
-    </div><!-- /#tab-links -->
+      </div><!-- /#recordsLinksView -->
 
-    <!-- TAB: ACCOUNTS -->
-    <div class="tab-panel" id="tab-accounts">
+      <div class="record-subview" id="recordsAccountsView">
 
       <!-- controls row -->
       <div class="controls">
@@ -839,91 +954,47 @@
           <div class="empty-desc">收到验证邮件后<br>账号将自动去重收录</div>
         </div>
       </div>
-    </div><!-- /#tab-accounts -->
+      </div><!-- /#recordsAccountsView -->
+    </div><!-- /#recordsView -->
 
-    <!-- TAB: DUCK -->
-    <div class="tab-panel" id="tab-duck">
-
-      <!-- 操作区（始终显示） -->
-      <div class="duck-generate-area">
-
-        <!-- 说明提示 -->
-        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 12px;background:rgba(0,122,255,0.05);border:1px solid rgba(0,122,255,0.14);border-radius:9px;font-size:12px;color:var(--text-secondary);line-height:1.6">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>点「一键自动生成」获取新地址；用该地址注册后，验证邮件到达时对应行右侧的<strong>链接按钮会变绿发光</strong>，点击即可复制验证链接。</span>
-        </div>
-
-        <!-- 按钮行 -->
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-primary" id="btnDuckAutoGenerate" title="自动打开 DDG 页面并点击 Generate → Copy，无需手动操作">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            一键自动生成
-          </button>
-          <button class="btn btn-ghost" id="btnDuckOpenPage" title="手动打开 DDG 页面自行操作">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            打开 DDG 页面
-          </button>
-          <button class="btn btn-ghost" id="btnDuckGenerate" title="需要 token，见下方设置" style="display:none">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            直接生成(token)
-          </button>
-          <!-- token 状态指示 -->
-          <span id="duckTokenStatus" style="font-size:11px;color:var(--text-muted);margin-left:auto"></span>
-        </div>
-
-        <!-- 最新生成结果框 -->
-        <div class="duck-result-box" id="duckResultBox">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <span class="duck-result-addr" id="duckResultAddr"></span>
-          <button class="action-btn" id="btnDuckCopyResult" title="复制地址">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
-        </div>
-
-        <!-- Token 配置（折叠） -->
-        <div>
-          <span id="duckTokenToggle" style="font-size:11px;color:var(--text-muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px">配置 token（用于直接生成）</span>
-          <div id="duckTokenArea" style="display:none;margin-top:9px">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:7px;line-height:1.6">
-              在 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">duckduckgo.com/email/settings/autofill</code> 按 F12 → <strong>Network</strong> → 点击「Generate」→ 找 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">quack.duckduckgo.com</code> 请求 → Headers → 复制 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">Authorization: Bearer</code> 后面的值
-            </div>
-            <div style="display:flex;gap:7px">
-              <input id="duckManualToken" class="settings-input" placeholder="粘贴 Bearer token…" style="flex:1;font-size:11px">
-              <button class="btn btn-primary" id="btnDuckManualSave" style="padding:6px 12px;font-size:12px;flex-shrink:0">保存</button>
-            </div>
-            <div id="duckTokenSaved" style="display:none;margin-top:7px;align-items:center;gap:6px">
-              <span class="duck-status-dot ok"></span>
-              <span style="font-size:11px;color:var(--text-secondary)" id="duckTokenInfo"></span>
-              <button id="btnDuckRemoveToken" style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">移除</button>
-            </div>
-          </div>
-        </div>
-
+    <div class="view-container" id="settingsView">
+      <div class="secondary-view-header">
+        <button class="btn btn-ghost" id="btnBackFromSettings" style="padding:5px 10px">←</button>
+        <div class="secondary-view-title">设置</div>
       </div>
 
-      <!-- 历史记录（始终显示） -->
-      <div class="duck-history-section">
-        <div class="duck-history-header">
-          <span id="duckHistoryCount" style="color:var(--text-secondary)">历史地址</span>
-          <div style="display:flex;gap:5px;align-items:center">
-            <button id="btnDuckSyncSheets" style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer" title="同步到 Google Sheets">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-              Sheets
-            </button>
-            <button id="btnDuckExportCSV" style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer" title="导出 CSV">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              CSV
-            </button>
-            <button id="btnDuckClearHistory" style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer" title="清空历史">清空</button>
-          </div>
+      <!-- DuckDuckGo Token 配置 -->
+      <div class="settings-section">
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:10px;">DuckDuckGo Token</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;line-height:1.6">
+          在 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">duckduckgo.com/email/settings/autofill</code> 按 F12 → <strong>Network</strong> → 点击「Generate」→ 找 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">quack.duckduckgo.com</code> 请求 → Headers → 复制 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">Authorization: Bearer</code> 后面的值
         </div>
-        <div class="duck-history-list" id="duckHistoryList"></div>
+        <div style="display:flex;gap:7px">
+          <input id="duckManualToken" class="settings-input" placeholder="粘贴 Bearer token…" style="flex:1;font-size:11px">
+          <button class="btn btn-primary" id="btnDuckManualSave" style="padding:6px 12px;font-size:12px;flex-shrink:0">保存</button>
+        </div>
+        <div id="duckTokenSaved" style="display:none;margin-top:7px;align-items:center;gap:6px">
+          <span class="duck-status-dot ok"></span>
+          <span style="font-size:11px;color:var(--text-secondary)" id="duckTokenInfo"></span>
+          <button id="btnDuckRemoveToken" style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">移除</button>
+        </div>
       </div>
 
-    </div><!-- /#tab-duck -->
-
-    <!-- TAB: SETTINGS -->
-    <div class="tab-panel" id="tab-settings">
+      <!-- Duck 历史数据操作 -->
+      <div class="settings-section">
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:10px;">Duck 历史数据</div>
+        <div style="display:flex;gap:8px">
+          <button id="btnDuckSyncSheets" class="btn btn-ghost" style="font-size:12px" title="同步到 Google Sheets">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            同步 Sheets
+          </button>
+          <button id="btnDuckExportCSV" class="btn btn-ghost" style="font-size:12px" title="导出 CSV">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出 CSV
+          </button>
+          <button id="btnDuckClearHistory" class="btn btn-ghost" style="font-size:12px;color:var(--accent-orange);border-color:rgba(255,59,48,0.3)" title="清空全部历史地址">清空历史</button>
+        </div>
+      </div>
 
       <!-- Google 集成（Sheets 同步 + Gmail API）合并面板 -->
       <div class="settings-section" style="border:1px solid rgba(0,122,255,0.18);border-radius:10px;padding:14px 16px;background:linear-gradient(180deg,rgba(0,122,255,0.04),transparent 60%);">
@@ -1049,7 +1120,7 @@
         <div class="settings-hint">识别激活链接的 URL 关键词，默认 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">auth.heygen.com/magic-web/</code>。修改后需重新扫描收件箱。</div>
       </div>
 
-    </div><!-- /#tab-settings -->
+    </div><!-- /#settingsView -->
 
   </div>
 
