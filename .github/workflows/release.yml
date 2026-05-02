@@ -1,30 +1,37 @@
-name: Release
+name: Release Browser Extension
 
 on:
   push:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Pack extension
+      - name: Package Extension
         run: |
-          zip -r extension-${{ github.ref_name }}.zip . \
+          zip -r quickdmail-${{ github.ref_name }}.zip . \
             --exclude ".git/*" \
             --exclude ".github/*" \
             --exclude ".claude/*" \
             --exclude "*.md"
 
-      - name: Create GitHub Release
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: '*.zip'
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: extension-${{ github.ref_name }}.zip
+          files: '*.zip'
           generate_release_notes: true
