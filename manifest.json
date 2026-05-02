@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Duck邮箱接码",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "自动捕获 Gmail 中 HeyGen 验证链接，配合 DuckDuckGo 私密邮箱批量接码",
     "permissions": [
         "storage",
