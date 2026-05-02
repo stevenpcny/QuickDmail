@@ -36,6 +36,9 @@
     if (!event.data) return;
     const d = event.data;
 
+    // 忽略我们自己的广播消息，防止 postMessage 无限循环
+    if (d.type === 'DDG_ADDRESS_GENERATED' || d.type === 'DDG_TOKEN_CAPTURED') return;
+
     // DDG autofill 扩展的消息格式（多版本兼容）
     const addr = d.address || d.privateAddress || d.generatedAddress ||
                  (d.type === 'ddgUserReply' && d.address) ||
