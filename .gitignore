@@ -1,0 +1,12 @@
+# Local development
+.claude/
+node_modules/
+.DS_Store
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
