@@ -727,6 +727,8 @@
             }
         });
         urlObserver.observe(document, { subtree: true, childList: true });
+
+        _startTitleWatcher();
     }
 
     function stopMonitoring() {
@@ -734,8 +736,44 @@
         if (observer) { observer.disconnect(); observer = null; }
         if (urlObserver) { urlObserver.disconnect(); urlObserver = null; }
         if (checkInterval) { clearInterval(checkInterval); checkInterval = null; }
+        _stopTitleWatcher();
         _emailQueue = [];
         log('监控已停止');
+    }
+
+    // ─── 标题监听：不在收件箱时检测新邮件 ───────────────────────
+    let _titleObserver = null;
+    let _lastUnreadCount = 0;
+
+    function _parseUnreadFromTitle(title) {
+        const m = (title || '').match(/^\((\d+)\)/);
+        return m ? parseInt(m[1]) : 0;
+    }
+
+    function _isOnInbox() {
+        const h = (location.hash || '').toLowerCase();
+        return h.startsWith('#inbox') || h === '' || h === '#';
+    }
+
+    function _startTitleWatcher() {
+        _stopTitleWatcher();
+        _lastUnreadCount = _parseUnreadFromTitle(document.title);
+        const titleEl = document.querySelector('title');
+        if (!titleEl) return;
+        _titleObserver = new MutationObserver(() => {
+            if (!isMonitoring) return;
+            const count = _parseUnreadFromTitle(document.title);
+            if (count > _lastUnreadCount && !_isOnInbox()) {
+                log(`标题检测到新邮件 (${_lastUnreadCount}→${count})，切换至收件箱扫描`);
+                location.hash = '#inbox';
+            }
+            _lastUnreadCount = count;
+        });
+        _titleObserver.observe(titleEl, { childList: true });
+    }
+
+    function _stopTitleWatcher() {
+        if (_titleObserver) { _titleObserver.disconnect(); _titleObserver = null; }
     }
 
     // ─── 将 Gmail 邮件标记为已读 ──────────────────────────────────
