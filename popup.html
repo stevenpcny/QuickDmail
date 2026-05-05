@@ -670,6 +670,13 @@
     }
     .duck-link-btn.has-link:hover { filter: brightness(1.1); }
     .duck-link-btn.has-link:active { cursor: grabbing; }
+    .duck-link-btn.link-used {
+      opacity: 0.7;
+      border-color: var(--text-muted);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .duck-link-btn.link-used:hover { opacity: 0.9; }
     .duck-link-btn.copied {
       animation: none;
       border-color: var(--accent-cyan);
@@ -1118,6 +1125,20 @@
           <button class="btn btn-ghost" id="btnResetLinkKeyword" style="font-size:11px;padding:5px 14px;">恢复默认</button>
         </div>
         <div class="settings-hint">识别激活链接的 URL 关键词，默认 <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">auth.heygen.com/magic-web/</code>。修改后需重新扫描收件箱。</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">链接前缀去除</div>
+        <div class="settings-row">
+          <textarea id="stripPrefixesInput" class="settings-input" rows="3"
+            placeholder="每行一个前缀，例如：&#10;https://click.example.com/track?url=&#10;https://redirect.example.com/r?u="
+            style="resize:vertical;font-size:11px;line-height:1.5;flex:1"></textarea>
+        </div>
+        <div class="settings-row">
+          <button class="btn btn-primary" id="btnSaveStripPrefixes" style="font-size:11px;padding:5px 14px;">保存</button>
+          <button class="btn btn-ghost" id="btnClearStripPrefixes" style="font-size:11px;padding:5px 14px;">清空</button>
+        </div>
+        <div class="settings-hint">捕获到的链接若以上方任一前缀开头，将自动去除该前缀，仅保留后段 URL。适用于邮件追踪跳转链接。</div>
       </div>
 
     </div><!-- /#settingsView -->

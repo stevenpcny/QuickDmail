@@ -17,11 +17,20 @@
     const DEFAULT_LINK_KEYWORD = 'auth.heygen.com/magic-web/';
     let _linkKeyword = DEFAULT_LINK_KEYWORD;
     let _trashKeywords = [];
+    let _stripPrefixes = [];
+
+    function _applyStripPrefixes(link) {
+        for (const prefix of _stripPrefixes) {
+            if (prefix && link.startsWith(prefix)) return link.slice(prefix.length);
+        }
+        return link;
+    }
 
     function _loadCustomConfig(callback) {
-        chrome.storage.local.get(['customLinkKeyword', 'trashKeywords'], (r) => {
+        chrome.storage.local.get(['customLinkKeyword', 'trashKeywords', 'stripLinkPrefixes'], (r) => {
             _linkKeyword = r.customLinkKeyword || DEFAULT_LINK_KEYWORD;
             _trashKeywords = r.trashKeywords || [];
+            _stripPrefixes = r.stripLinkPrefixes || [];
             // 通知 page-interceptor 更新关键词
             window.__HGC_LINK_KEYWORD__ = _linkKeyword;
             window.postMessage({ type: 'HGC_CONFIG_UPDATE', linkKeyword: _linkKeyword }, '*');
@@ -36,6 +45,7 @@
             window.postMessage({ type: 'HGC_CONFIG_UPDATE', linkKeyword: _linkKeyword }, '*');
         }
         if (changes.trashKeywords) _trashKeywords = changes.trashKeywords.newValue || [];
+        if (changes.stripLinkPrefixes) _stripPrefixes = changes.stripLinkPrefixes.newValue || [];
     });
 
     // 立即设置默认值，再异步加载存储值
@@ -103,9 +113,10 @@
     }
 
     // 保存 XHR 拦截到的链接（去重 + 写 storage + 刷新侧边栏）
-    function _saveXhrCapturedLink(link, account, receivedTs, gmailThreadId) {
+    function _saveXhrCapturedLink(rawLink, account, receivedTs, gmailThreadId) {
+        const link = _applyStripPrefixes(rawLink);
         // 以链接路径部分做稳定 ID，避免不同 session 重复
-        const emailId = 'xhr_' + link.replace(/^https?:\/\/[^/]+/, '').replace(/[^A-Za-z0-9]/g, '').substring(0, 64);
+        const emailId = 'xhr_' + link.replace(/^https?:\/\/[^/]+/, '').replace(/[^A-Za-z0-9]/g, '');
         if (processedEmails.has(emailId)) return;
         processedEmails.add(emailId);
 
