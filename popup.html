@@ -578,6 +578,43 @@
     .warning-title { font-size: 14px; font-weight: 700; color: var(--accent-orange); margin-bottom: 7px; }
     .warning-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
 
+    /* ── TOUR ── */
+    .tour-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+      transition: background 0.3s;
+    }
+    .tour-overlay.active {
+      background: rgba(0,0,0,0.52);
+      pointer-events: all;
+    }
+    .tour-highlight {
+      position: fixed; z-index: 501; pointer-events: none;
+      border-radius: 10px;
+      box-shadow: 0 0 0 3px #007AFF, 0 0 0 7px rgba(0,122,255,0.28);
+      transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+    .tour-tooltip {
+      position: fixed; z-index: 502;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 16px 18px;
+      width: 256px;
+      box-shadow: var(--shadow-md);
+    }
+    .tour-tooltip-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .tour-tooltip-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.75; margin-bottom: 14px; }
+    .tour-tooltip-actions { display: flex; align-items: center; justify-content: space-between; }
+    .tour-skip { font-size: 11px; color: var(--text-muted); cursor: pointer; }
+    .tour-skip:hover { color: var(--text-secondary); }
+    .tour-step-dots { display: flex; gap: 4px; }
+    .tour-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
+    .tour-dot.active { background: var(--accent-cyan); }
+    .tour-next { padding: 6px 14px; border-radius: 8px; border: none; background: var(--accent-cyan); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .tour-next:hover { background: #0066dd; }
+
     /* ── DUCK TAB ── */
     .duck-connect-card {
       margin: 18px 16px;
@@ -711,6 +748,7 @@
       <button id="btnExpand" class="header-nav-btn" title="在新标签页打开完整界面">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
       </button>
+      <button id="btnTourHelp" class="header-nav-btn" title="新手引导" style="font-size:13px;font-weight:700;color:var(--text-muted)">?</button>
     </div>
   </div>
 
@@ -1167,6 +1205,11 @@
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+  <!-- TOUR -->
+  <div class="tour-overlay" id="tourOverlay"></div>
+  <div class="tour-highlight" id="tourHighlight" style="display:none"></div>
+  <div class="tour-tooltip" id="tourTooltip" style="display:none"></div>
 
   <script src="popup.js"></script>
 </body>

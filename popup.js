@@ -1863,4 +1863,106 @@ async function init() {
   loadData();
 }
 
-init();
+// ─── TOUR ────────────────────────────────────────────────────
+const TOUR_STEPS = [
+  {
+    target: null,
+    title: '👋 欢迎使用 Duck邮箱接码',
+    desc: '这个插件帮你快速生成 DuckDuckGo 临时邮箱，并从 Gmail 自动抓取 HeyGen 注册验证链接。\n花 1 分钟了解完整流程 →',
+  },
+  {
+    target: '#btnDuckAutoGenerate',
+    title: '① 获取临时邮箱',
+    desc: '点击「生成邮箱」，插件自动打开 DDG 页面。\n在页面上点击「Generate」后，关闭 DDG 页面返回插件。',
+  },
+  {
+    target: '#statusBadge',
+    title: '② 开启监控 + 复制邮箱',
+    desc: '点「已停止」开启 Gmail 监控。\n然后再点「生成邮箱」，临时邮箱地址会自动复制到剪贴板，直接粘贴到 HeyGen 注册页面的邮箱栏即可。',
+  },
+  {
+    target: null,
+    title: '✅ 等待验证链接',
+    desc: '注册完成后，HeyGen 发送的验证邮件会被自动捕获，激活链接直接显示在主界面。\n点击链接可直接跳转激活，也可以拖拽链接到浏览器地址栏完成激活。\n\n右上角 ? 可随时重新查看此引导。',
+  },
+];
+
+let tourStep = -1;
+const tourOverlay  = document.getElementById('tourOverlay');
+const tourHighlight = document.getElementById('tourHighlight');
+const tourTooltip  = document.getElementById('tourTooltip');
+
+tourOverlay.addEventListener('click', e => { if (e.target === tourOverlay) advanceTour(); });
+
+function showTourStep(step) {
+  tourStep = step;
+  if (step >= TOUR_STEPS.length) { endTour(); return; }
+
+  const s = TOUR_STEPS[step];
+  const isLast  = step === TOUR_STEPS.length - 1;
+  const isFirst = step === 0;
+  const dots = TOUR_STEPS.map((_, i) =>
+    `<div class="tour-dot${i === step ? ' active' : ''}"></div>`).join('');
+
+  tourTooltip.innerHTML = `
+    <div class="tour-tooltip-title">${s.title}</div>
+    <div class="tour-tooltip-desc">${s.desc.replace(/\n/g, '<br>')}</div>
+    <div class="tour-tooltip-actions">
+      <span class="tour-skip" id="tourSkip">${isFirst ? '跳过引导' : '结束引导'}</span>
+      <div class="tour-step-dots">${dots}</div>
+      <button class="tour-next" id="tourNext">${isLast ? '完成 ✓' : '下一步 →'}</button>
+    </div>`;
+
+  document.getElementById('tourNext').addEventListener('click', advanceTour);
+  document.getElementById('tourSkip').addEventListener('click', endTour);
+
+  tourOverlay.classList.add('active');
+  tourHighlight.style.display = 'none';
+  tourTooltip.style.cssText = 'display:block';
+
+  if (s.target) {
+    const el = document.querySelector(s.target);
+    if (el) {
+      const r   = el.getBoundingClientRect();
+      const pad = 5;
+      Object.assign(tourHighlight.style, {
+        display: 'block',
+        left:   (r.left - pad) + 'px',
+        top:    (r.top  - pad) + 'px',
+        width:  (r.width  + pad * 2) + 'px',
+        height: (r.height + pad * 2) + 'px',
+      });
+      const tooltipLeft = Math.max(8, Math.min(r.left - 8, document.body.clientWidth - 272));
+      Object.assign(tourTooltip.style, {
+        top:       (r.bottom + pad + 10) + 'px',
+        left:      tooltipLeft + 'px',
+        transform: '',
+      });
+    }
+  } else {
+    Object.assign(tourTooltip.style, {
+      top: '50%', left: '50%',
+      transform: 'translate(-50%, -50%)',
+    });
+  }
+}
+
+function advanceTour() { showTourStep(tourStep + 1); }
+
+function endTour() {
+  tourOverlay.classList.remove('active');
+  tourHighlight.style.display = 'none';
+  tourTooltip.style.display   = 'none';
+  tourStep = -1;
+  chrome.storage.local.set({ tourSeen: true });
+}
+
+function startTour() { showTourStep(0); }
+
+document.getElementById('btnTourHelp').addEventListener('click', startTour);
+
+init().then(() => {
+  chrome.storage.local.get(['tourSeen'], r => {
+    if (!r.tourSeen) startTour();
+  });
+});
