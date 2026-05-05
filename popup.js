@@ -997,12 +997,14 @@ function hideScanProgress() {
 
 // ─── P5: Settings Tab ────────────────────────────────────────
 function initSettingsTab() {
-  // restore custom link keyword + trash keywords
-  chrome.storage.local.get(['customLinkKeyword', 'trashKeywords'], (r) => {
+  // restore custom link keyword + trash keywords + strip prefixes
+  chrome.storage.local.get(['customLinkKeyword', 'trashKeywords', 'stripLinkPrefixes'], (r) => {
     const kwEl = document.getElementById('customLinkKeywordInput');
     if (kwEl) kwEl.value = r.customLinkKeyword || '';
     const tkEl = document.getElementById('trashKeywordsInput');
     if (tkEl) tkEl.value = (r.trashKeywords || []).join('\n');
+    const spEl = document.getElementById('stripPrefixesInput');
+    if (spEl) spEl.value = (r.stripLinkPrefixes || []).join('\n');
   });
 
   document.getElementById('btnSaveLinkKeyword').onclick = () => {
@@ -1018,6 +1020,19 @@ function initSettingsTab() {
     chrome.storage.local.set({ customLinkKeyword: DEFAULT_LINK_KEYWORD });
     _linkKeyword = DEFAULT_LINK_KEYWORD;
     showToast('✓ 已恢复默认链接关键词');
+  };
+
+  document.getElementById('btnSaveStripPrefixes').onclick = () => {
+    const lines = (document.getElementById('stripPrefixesInput').value || '')
+      .split('\n').map(s => s.trim()).filter(Boolean);
+    chrome.storage.local.set({ stripLinkPrefixes: lines });
+    showToast(`✓ 链接前缀已保存（${lines.length} 条）`);
+  };
+
+  document.getElementById('btnClearStripPrefixes').onclick = () => {
+    document.getElementById('stripPrefixesInput').value = '';
+    chrome.storage.local.set({ stripLinkPrefixes: [] });
+    showToast('✓ 链接前缀已清空');
   };
 
   document.getElementById('btnSaveTrashKeywords').onclick = () => {
@@ -1423,7 +1438,7 @@ function _renderDuckHistory(history, allLinks) {
       <span class="duck-row-addr" title="${item.address}">${item.address}</span>
       ${srcBadge}
       <span class="duck-row-time">${timeStr}</span>
-      <button class="duck-link-btn ${hasLink ? 'has-link' : ''}"
+      <button class="duck-link-btn ${hasLink ? 'has-link' : linkUsed ? 'link-used' : ''}"
               title="${hasLink ? '点击复制验证链接：' + matchedLink.verifyLink.substring(0, 60) + '…' : (linkUsed ? '已使用（点击可再次复制）' : '等待验证邮件到达…')}"
               data-link="${matchedLink ? escHtml(matchedLink.verifyLink || '') : ''}"
               data-id="${matchedLink ? escHtml(matchedLink.id || '') : ''}"
